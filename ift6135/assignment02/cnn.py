@@ -183,7 +183,8 @@ class DeepBoi(torch.nn.Module):
         # builds the convolutional layers
         # [(n_filters, n_repeats / block), ...]
         #conv_blocks = [(64, 2), (128, 2), (256, 2), (512, 4), (512, 4)]
-        conv_blocks = [(64, 2), (128, 2), (256, 2), (512, 4)]
+        #conv_blocks = [(64, 2), (128, 2), (256, 2), (512, 4)]
+        conv_blocks = [(64, 2), (128, 2), (128, 2), (256, 4)]
         conv_arch = []
 
         for block in conv_blocks:
@@ -202,8 +203,10 @@ class DeepBoi(torch.nn.Module):
             conv_arch.append(torch.nn.MaxPool2d(kernel_size=(2, 2), stride=2))
 
         # builds the fully connected layers
-        init_layer = conv_blocks[-1][0] * 2 * 2
-        fc_layers = [init_layer, 4096, 4096, 1000]
+        #import IPython; IPython.embed()
+        init_layer = conv_blocks[-1][0] * 4 * 4 # ???
+        #fc_layers = [init_layer, 4096, 4096, 1000]
+        fc_layers = [init_layer, 2048, 2048, 500]
         fc_arch = []
         for i in range(1, len(fc_layers)):
             fc_arch.extend([
@@ -657,8 +660,8 @@ def q1c():
 
 def q2():
     lr = 0.02
-    epochs = 100
-    batch_size = 12
+    epochs = 20
+    batch_size = 50
     boi = DeepBoi(in_channels=3, n_out=2)
     loaders = load_dc(batch_size=batch_size)
     l2 = 2.5 / (len(loaders[0].dataset.data_tensor)/batch_size)
