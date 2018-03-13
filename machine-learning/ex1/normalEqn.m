@@ -1,0 +1,7 @@
+function [theta] = normalEqn(X, y)
+    % NORMALEQN(X,y) computes the closed-form solution to linear
+    % regression using the normal equations.
+
+    theta = inv(X'*X)*X'*y;
+end
+

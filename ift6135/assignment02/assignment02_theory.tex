@@ -1,0 +1,184 @@
+%&pdflatex
+%% filename: amsart-template.tex, version: 2.1
+\documentclass{amsart}
+\usepackage{hyperref}
+\usepackage{inputenc}
+\usepackage{graphicx}
+\usepackage{bbm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{xca}[theorem]{Exercise}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\setlength{\parindent}{0pt} % turn off auto-indent
+
+\graphicspath{ {./} }
+
+\begin{document}
+
+\title{Assignment 2: Theory of CNNs and Regularization [IFT6135]}
+
+\author{Joseph D. Viviano}
+\address{Universit\'e de Montr\'eal}
+\curraddr{}
+\email{joseph@viviano.ca}
+\thanks{}
+\date{March 2018}
+
+\maketitle
+
+
+
+
+
+\section{Convolutions}
+
+% http://cs231n.github.io/convolutional-networks/
+
+\section{Convolutional Neural Networks}
+% http://cs231n.github.io/convolutional-networks/
+
+(a) Since we have one zero padding in layer three, so the size of layer $3$ is  $128 \times6 \times6$. The image has $3$ color , therefore the last layer is a fully connected layer of the size $$3.128.6.6= 13824.$$. \\
+
+(b) For the last convolution the size of kernel is $4\times4$ and we have $128$ kernels of $3$ colors, so the number of parameters is as follows $$\#W= 4.4.128.3=6144.$$. \\
+
+
+\section{Kernel Configurations for CNNs}
+
+(a): $\bm{i}:$ We denote the dimension of input as $W_1\times H_1$ and the dimension of output is $W_2\times H_2$, the kernel size is $K\times K$, number of zero padding is $P$ and stride size is $S$, then we easily can see that
+
+\begin{equation}\label{conv1}
+W_2= \frac{W_1-K+2P}{S}+1,
+\end{equation} \\
+
+by using this formula we get $$32=\frac{64-8+2P}{S}+1$$. So if we set $\bm{P=3}$
+and $\bm{S=2}$, the this convolution operation works.\\
+
+$\bm{ii}:$ If we have dilatation of size $D$, then
+
+\begin{equation}\label{conv2}
+W_2= \frac{W_1-K+2P+(W_1-1)D}{S}+1,
+\end{equation}
+
+So here we have $$32= \frac{64-K+2P+63.6}{2}+1,$$. So if we set $\bm{K=400}$ and
+$\bm{P=10}$, then our convolution operation works.\\\\
+
+(b): For the pooling layer if the the kernel size is $\bm{K=4\times4}$ with no
+overlapping which means the stride size is$\bm{S=4}$, Then the pooling operation
+works.\\
+
+(c): Here we have $K=8$, $W_1=32$ and $S=4$. By replacing the values in the
+formula\eqref{conv1}, we have $$W_2= \frac{32-K}{4}+1=7$$. So the output is of
+the size $\bm{7\times7}.$ \\
+
+(d): $\bm{i}$ here we have $W_2=4$, $W_1=8$ and $P=0$, so by using the formula
+in \eqref{conv1}, we get $$4=\frac{8-K+0}{S}+1,$$. By setting $\bm{K=2}$ and
+$\bm{S=2}$, the operation will work. \\
+
+$\ibm{ii}:$ we have $W_2=4$, $W_1=8$, $P=2$
+and $D=1$, so by applying \eqref{conv2}, we obtain $$4= \frac{8-K+4+7}{S}+1$$
+by putting $\bm{K=13}$ and $\bm{S=2}$, the operation works.\\
+
+$\bm{iii}:$ By substituting the values in \eqref{conv1}, we have
+$$4=\frac{8-K+2}{S}+1,$$ so we choose $\bm{K=4}$ and $\bm{S=2}$. \\
+
+\section{Dropout as Weight Decay}
+% see fundimental differences dropout vs/ weight decay
+% https://www.reddit.com/r/MachineLearning/comments/42nnpe/why_do_i_never_see_dropout_applied_in/
+
+\section{Dropout as a Geometric Ensemble}
+
+\textit{Consider the case of a single linear layer model with a softmax output.
+Prove that weight scaling by 0.5 corresponds exactly to the inference of a
+conditional probability distribution proportional to a geometric mean over all
+dropout masks.} \\
+
+First, observe the single linear layer with softmax output with $n$ input
+variables represented by the vector $v$ with dropout mask $d$: \\
+
+\begin{equation}
+P(y = \mbox{y} | v;d ) = \mathbf{softmax}\left( W^T(d \odot v) + b \right)_y
+\end{equation} \\
+
+and the ensemble conditional probability distribution which represents the
+geometric mean over all dropout masks: \\
+
+\begin{equation}
+p_{ens}(y = \mbox{y} | v;d ) \propto \left( \prod_{i=1}^N \hat{y}_{v}^{(i)} \right)^{\frac{1}{N}}.
+\end{equation} \\
+
+Aren't they nice? Recall the alternative formulation of the softmax: \\
+
+\begin{equation}
+\mathbf{softmax}_i = \frac{e^{x_i}}{\sum_{k=1}^K e^{x_k}}
+\end{equation} \\
+
+Which we now rewrite, subbing in our vector representation of the softmax and
+replacing $e^x$ with $exp(x)$: \\
+
+\begin{equation}
+\mathbf{softmax}_y = \frac{exp \left( W_y^T(d \odot v) + b \right)}
+                          {\sum_{k=1}^K exp \left( W_{y'}^T(d \odot v) + b \right)}
+\end{equation}
+
+Now we show that the ensemble predictor is defined by re-normalizing the
+geometric mean over all the individual ensemble members' predictions: \\
+
+\begin{equation}
+P_{ens}(y = \mbox{y} | v) = \frac{\tilde{P}_{ens}(y = \mbox{y} | v)}{\sum{y'} \tilde{P}_{ens}(y = \mbox{y'} | v)}
+\end{equation} \\
+
+Where each $\tilde{P}_{ens}$ is the geometric mean over all dropout masks for a single $\mbox{y}$: \\
+
+\begin{equation}
+\tilde{P}_{ens}(y = \mbox{y} | v) = 2^n \sqrt{ \prod_{d \in \{0, 1\}^n} P(y = \mbox{y} | v;d ) }.
+\end{equation} \\
+
+Now we simply sub in our definition of $softmax$ for $P$: \\
+
+\begin{equation}
+\tilde{P}_{ens}(y = \mbox{y} | v) = 2^n \sqrt{ \prod_{d \in \{0, 1\}^n}
+                \frac{exp \left( W_y^T(d \odot v) + b \right)}
+                     {\sum_{k=1}^K exp \left( W_{y'}^T(d \odot v) + b \right)}}.
+\end{equation} \\
+
+Since the denominator is a constant under this normalization scheme we ignore it
+and simplify:
+
+\begin{equation}
+\tilde{P}_{ens}(y = \mbox{y} | v) \propto 2^n \sqrt{ \prod_{d \in \{0, 1\}^n} exp \left( W_y^T(d \odot v) + b \right)}
+\end{equation}
+
+We convert the product to the sum by taking $exp$ of the entire equation: \\
+
+\begin{equation}
+\tilde{P}_{ens}(y = \mbox{y} | v) \propto exp \left( \frac{1}{2^n} \sum_{d \in \{0, 1\}^n} W_y
+^T(d \odot v) + b \right)
+\end{equation}
+
+And finally the sum and exponent $n$ cancel: \\
+
+\begin{equation}
+\tilde{P}_{ens}(y = \mbox{y} | v) \propto exp \left( \frac{1}{2}  W_y^T(d \odot v) + b \right)
+\end{equation}
+
+Finally, we sub this back into our earlier formulation of the softmax to show
+that the weights $W$ are scaled by $\frac{1}{2}$: \\
+
+\begin{equation}
+\mathbf{softmax}_y = \frac{exp \left( \frac{1}{2}W_y^T(d \odot v) + b \right)}
+                          {\sum_{k=1}^K exp \left( \frac{1}{2}W_{y'}^T(d \odot v) + b \right)}
+\end{equation} \\
+
+Therefore, weight scaling by 0.5 is exactly equivilant to a conditional
+probability distribution proportional to a geometric mean over all dropout masks.
+
+\section{Normalization}
+
+\end{document}
+
