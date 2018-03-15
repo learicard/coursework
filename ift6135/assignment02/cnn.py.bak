@@ -13,8 +13,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from torchvision import transforms
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
-
+from time import gmtime, strftime
 
 CUDA = torch.cuda.is_available()
 DC_TRAIN = 'datasets/train_64x64'
@@ -178,13 +177,14 @@ class DeepBoi(torch.nn.Module):
     Convnet Classifier taken from "Very deep convolutional networks for
     large-scale image recognition"
     """
-    def __init__(self, n_in=3, n_out=2):
+    def __init__(self, in_channels=3, n_out=2):
         super(DeepBoi, self).__init__()
 
         # builds the convolutional layers
         # [(n_filters, n_repeats / block), ...]
-        conv_blocks = [(64, 2), (128, 2), (256, 2), (512, 4), (512, 4)]
-        in_channels = n_in
+        #conv_blocks = [(64, 2), (128, 2), (256, 2), (512, 4), (512, 4)]
+        #conv_blocks = [(64, 2), (128, 2), (256, 2), (512, 4)]
+        conv_blocks = [(64, 2), (128, 2), (128, 2), (256, 4)]
         conv_arch = []
 
         for block in conv_blocks:
@@ -203,8 +203,10 @@ class DeepBoi(torch.nn.Module):
             conv_arch.append(torch.nn.MaxPool2d(kernel_size=(2, 2), stride=2))
 
         # builds the fully connected layers
-        init_layer = conv_blocks[-1][0] * 2 * 2
-        fc_layers = [init_layer, 4096, 4096, 1000]
+        #import IPython; IPython.embed()
+        init_layer = conv_blocks[-1][0] * 4 * 4 # ???
+        #fc_layers = [init_layer, 4096, 4096, 1000]
+        fc_layers = [init_layer, 2048, 2048, 500]
         fc_arch = []
         for i in range(1, len(fc_layers)):
             fc_arch.extend([
@@ -220,6 +222,7 @@ class DeepBoi(torch.nn.Module):
 
 
     def forward(self, x):
+        #import IPython; IPython.embed()
         # input.view(self.size(0), -1)
         x = self.conv(x)
         dims = x.shape
@@ -306,6 +309,7 @@ def run_experiment(clf, lr, epochs, loaders, momentum=0, l2=0, init_type='glorot
             X_train, y_train = Variable(X_train), Variable(y_train)
 
             # make predictions: 4d for conv, 2d for mlp
+            #import IPython; IPython.embed()
             if convmode:
                 if len(X_train.shape) == 3:
                     train_fwd = clf.forward(X_train.unsqueeze(1)) # because no channel dimention for mnist
@@ -494,45 +498,29 @@ def parse_jpegs(files):
 
 def load_dc(batch_size=64):
     """Loads cat and dog data into train / valid / test dataloders"""
-    if os.isfile('test_mats.npy'):
-        test_mats = np.load('test_mats.npy')
-        train_mats = np.load('train_mats.npy')
-        valid_mats = np.load('valid_mats.npy')
-        test_labels = np.load('test_labels.npy')
-        train_labels = np.load('train_labels.npy')
-        valid_labels = np.load('valid_labels.npy')
+    train_files = glob(os.path.join(DC_TRAIN, '*.jpg'))
+    valid_files = glob(os.path.join(DC_VALID, '*.jpg'))
 
-    else:
-        train_files = glob(os.path.join(DC_TRAIN, '*.jpg'))
-        valid_files = glob(os.path.join(DC_VALID, '*.jpg'))
+    train_mats, train_labels = parse_jpegs(train_files)
+    valid_mats, valid_labels = parse_jpegs(valid_files)
 
-        train_mats, train_labels = parse_jpegs(train_files)
-        valid_mats, valid_labels = parse_jpegs(valid_files)
+    means = [np.mean(train_mats[:,0,:,:]),
+             np.mean(train_mats[:,1,:,:]),
+             np.mean(train_mats[:,2,:,:])]
 
-        means = [np.mean(train_mats[:,0,:,:]),
-                 np.mean(train_mats[:,1,:,:]),
-                 np.mean(train_mats[:,2,:,:])]
+    train_mats[:,0,:,:] -= means[0]
+    train_mats[:,1,:,:] -= means[1]
+    train_mats[:,2,:,:] -= means[2]
+    valid_mats[:,0,:,:] -= means[0]
+    valid_mats[:,1,:,:] -= means[1]
+    valid_mats[:,2,:,:] -= means[2]
 
-        train_mats[:,0,:,:] -= means[0]
-        train_mats[:,1,:,:] -= means[1]
-        train_mats[:,2,:,:] -= means[2]
-        valid_mats[:,0,:,:] -= means[0]
-        valid_mats[:,1,:,:] -= means[1]
-        valid_mats[:,2,:,:] -= means[2]
+    valid_cutoff = valid_mats.shape[0] // 2
 
-        valid_cutoff = valid_mats.shape[0] // 2
-
-        test_mats = valid_mats[valid_cutoff:, :, :, :]
-        valid_mats = valid_mats[:valid_cutoff, :, :, :]
-        test_labels = valid_labels[valid_cutoff:]
-        valid_labels = valid_labels[:valid_cutoff]
-
-        np.save('test_mats.npy', test_mats)
-        np.save('train_mats.npy', train_mats)
-        np.save('valid_mats.npy', valid_mats)
-        np.save('test_labels.npy', test_labels)
-        np.save('train_labels.npy', train_labels)
-        np.save('valid_labels.npy', valid_labels)
+    test_mats = valid_mats[valid_cutoff:, :, :, :]
+    valid_mats = valid_mats[:valid_cutoff, :, :, :]
+    test_labels = valid_labels[valid_cutoff:]
+    valid_labels = valid_labels[:valid_cutoff]
 
     # convert
     train_dataset = TensorDataset(torch.FloatTensor(train_mats), torch.ByteTensor(train_labels))
@@ -672,12 +660,15 @@ def q1c():
 
 def q2():
     lr = 0.02
-    epochs = 10
-    batch_size = 8
-    boi = DeepBoi(n_in=3, n_out=2)
+    epochs = 20
+    batch_size = 50
+    boi = DeepBoi(in_channels=3, n_out=2)
     loaders = load_dc(batch_size=batch_size)
     l2 = 2.5 / (len(loaders[0].dataset.data_tensor)/batch_size)
+    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
     model = run_experiment(boi, lr, epochs, loaders, l2=l2, convmode=True)
+    print(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+
     import IPython; IPython.embed()
 
 if __name__ == '__main__':
