@@ -5,6 +5,26 @@
 \usepackage{inputenc}
 \usepackage{graphicx}
 \usepackage{bbm}
+\usepackage{bm}
+\usepackage{amsmath,amsthm,amssymb,amsfonts,mathrsfs}
+\usepackage{mathtools}
+\usepackage[mathscr]{euscript}
+
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\const}{\mathrm{const}}
+\newcommand{\f}{f(\bm{x},\bm{\theta})}
+\newcommand{\activ}{a(\bm{x},\bm{\theta})}
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\X}{\tilde{X}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\relu}{\mathrm{relu}}
+\newcommand{\der}{\mathrm{d}}
+\newcommand{\soft}{\mathrm{softmax}}
+\newcommand{\var}{\mathrm{Var}}
+%\newcommand{\tanh}{\mathrm{tanh}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -33,63 +53,139 @@
 \maketitle
 
 
-
-
-
 \section{Convolutions}
 
 % http://cs231n.github.io/convolutional-networks/
+$\bm{x}=(...,x_{-1}, x_0, x_1,x_2,x_3,x_4,...)
+=(...,0,1,2,3,4,0,...)$\\
+$\bm{w}=(...,w_{-1}, w_0, w_1,w_2,w_3,w_4,...)
+=(...,0,1,0,2,0,0,...)$\\
+\begin{equation}
+[\bm{x}*\bm{w}](i) =\sum_{k=-\infty}^{\infty}x_{k}w_{i-k}
+\end{equation}
+$~~~[\bm{x}*\bm{w}](0)=x_0w_0=1\cdot 1=1$\\
+
+$~~~[\bm{x}*\bm{w}](1)=x_0w_1 + x_1w_0 =1\cdot 0 + 2\cdot 1=2$\\
+
+$~~~
+[\bm{x}*\bm{w}](2)
+= x_0w_2 + x_1w_1 + x_2w_0
+= 1\cdot 2 + 2\cdot 0 + 3\cdot 1 =5$\\
+
+$~~~
+[\bm{x}*\bm{w}](3)
+= x_0w_3 + x_1w_2 + x_2w_1 + x_3w_0
+= 1\cdot 0 + 2\cdot 2 + 3\cdot 0 + 4\cdot 1 =8$\\
+
+$~~~
+[\bm{x}*\bm{w}](4)
+= x_2w_2 + x_3w_1
+= 3\cdot 2 + 4\cdot 0 =6$\\
+
+$~~~
+[\bm{x}*\bm{w}](5)
+= x_3w_2
+= 4\cdot 2 =8$\\
+
+Let's $y_i = [\bm{x}*\bm{w}](i)$. Thus we have $\bm{y}=(1,2,5,8,6,8)$ where the null elements are not shown.
 
 \section{Convolutional Neural Networks}
 % http://cs231n.github.io/convolutional-networks/
 
-(a) Since we have one zero padding in layer three, so the size of layer $3$ is  $128 \times6 \times6$. The image has $3$ color , therefore the last layer is a fully connected layer of the size $$3.128.6.6= 13824.$$. \\
+(a) NB: zero padding in layer three, so size of layer 3 is $128 \times6 \times6$.
+The image is RGB (i.e., 3 channels), therefore the last layer is a fully
+connected layer of the size $$ 3 \times 128 \times 6 \times 6 = 13824$$. \\
 
-(b) For the last convolution the size of kernel is $4\times4$ and we have $128$ kernels of $3$ colors, so the number of parameters is as follows $$\#W= 4.4.128.3=6144.$$. \\
-
+(b) The last convolution has a kernel size $4 \times 4$ and there are $128$
+filters with 3 channels, so $$n\_params = 4 \times 4 \times 128 \times 3 = 6144$$. \\
 
 \section{Kernel Configurations for CNNs}
 
-(a): $\bm{i}:$ We denote the dimension of input as $W_1\times H_1$ and the dimension of output is $W_2\times H_2$, the kernel size is $K\times K$, number of zero padding is $P$ and stride size is $S$, then we easily can see that
+(a): $\bm{i}:$ input is $W_1\times H_1$ and output is $W_2\times H_2$.
+Kernel size is $K$, zero padding is $P$ and stride is $S$. Therefore
 
-\begin{equation}\label{conv1}
+\begin{equation}
 W_2= \frac{W_1-K+2P}{S}+1,
 \end{equation} \\
 
-by using this formula we get $$32=\frac{64-8+2P}{S}+1$$. So if we set $\bm{P=3}$
-and $\bm{S=2}$, the this convolution operation works.\\
+plugging our numbers in, we get $$32=\frac{64-8+2P}{S}+1$$. Either $\bm{P=3}$
+and $\bm{S=2}$ would produce a proper convolution.\\
 
-$\bm{ii}:$ If we have dilatation of size $D$, then
+$\bm{ii}:$ Dilatation size is $D$,
 
-\begin{equation}\label{conv2}
-W_2= \frac{W_1-K+2P+(W_1-1)D}{S}+1,
+\begin{equation}
+W_2= \frac{W_1-K+2P+(W_1-1)D}{S}+1
 \end{equation}
 
-So here we have $$32= \frac{64-K+2P+63.6}{2}+1,$$. So if we set $\bm{K=400}$ and
+So plugging in, $$32= \frac{64-K+2P+63.6}{2}+1.$$ If we set $\bm{K=400}$ and
 $\bm{P=10}$, then our convolution operation works.\\\\
 
-(b): For the pooling layer if the the kernel size is $\bm{K=4\times4}$ with no
-overlapping which means the stride size is$\bm{S=4}$, Then the pooling operation
+(b): If the kernel size of the pooling layer is $\bm{K=4\times4}$ with no
+overlap, and the stride size is $\bm{S=4}$, the pooling operation
 works.\\
 
-(c): Here we have $K=8$, $W_1=32$ and $S=4$. By replacing the values in the
-formula\eqref{conv1}, we have $$W_2= \frac{32-K}{4}+1=7$$. So the output is of
-the size $\bm{7\times7}.$ \\
+(c): $K=8$, $W_1=32$ and $S=4$, we plug them in and presto
+$$W_2= \frac{32-K}{4}+1=7.$$ The output is $\bm{7\times7}.$ \\
 
-(d): $\bm{i}$ here we have $W_2=4$, $W_1=8$ and $P=0$, so by using the formula
-in \eqref{conv1}, we get $$4=\frac{8-K+0}{S}+1,$$. By setting $\bm{K=2}$ and
-$\bm{S=2}$, the operation will work. \\
+(d): $\bm{i}$ $W_2=4$, $W_1=8$ and $P=0$, plugging in, we get
+$$4=\frac{8-K+0}{S}+1.$$ Therefore $\bm{K=2}$ and $\bm{S=2}$ are appropriate. \\
 
-$\ibm{ii}:$ we have $W_2=4$, $W_1=8$, $P=2$
-and $D=1$, so by applying \eqref{conv2}, we obtain $$4= \frac{8-K+4+7}{S}+1$$
-by putting $\bm{K=13}$ and $\bm{S=2}$, the operation works.\\
+$\bm{ii}:$ $W_2=4$, $W_1=8$, $P=2$ and $D=1$. Plugging in, we get
+$$4= \frac{8-K+4+7}{S}+1.$$ So $\bm{K=13}$ and $\bm{S=2}$ are appropriate.\\
 
-$\bm{iii}:$ By substituting the values in \eqref{conv1}, we have
-$$4=\frac{8-K+2}{S}+1,$$ so we choose $\bm{K=4}$ and $\bm{S=2}$. \\
+$\bm{iii}:$ $$4=\frac{8-K+2}{S}+1,$$ so $\bm{K=4}$ and $\bm{S=2}$
+are appropriate. \\
 
 \section{Dropout as Weight Decay}
 % see fundimental differences dropout vs/ weight decay
 % https://www.reddit.com/r/MachineLearning/comments/42nnpe/why_do_i_never_see_dropout_applied_in/
+(a) Let $\tilde{X}=X\odot\bm{\delta}$ where
+$\bm{\delta}=(\delta_1,...,\delta_n)$,
+\begin{equation}
+\delta_i=
+\begin{cases}
+\bm{0}, ~~~&p  \\
+\bm{1}, &1-p,
+\end{cases}
+\end{equation}
+and $\bm{0}$ and $\bm{1}$ are vecteur of dimension $1\times d$ of elements 0 and 1 respectively.\\
+
+(b) Let $L_{MSE}$ be the cost function. The general formula for the cost is
+\begin{equation}
+L_{MSE}(w) = \frac{1}{n}\sum_{i=1}^n(\hat{y}^{(i)}-y^{(i)})^2
+\end{equation}
+where $\hat{y}^{(i)}$ is the the prediction and if we add dropout we have
+\begin{equation}
+\label{MSE}
+L_{MSE}(w) = \frac{1}{n}\sum_{i=1}^n(x^{(i)}\delta_i w-y^{(i)})^2
+\end{equation}
+
+(c) In this part, we will assume that the probability of dropping a input unit is $1-p$. The expected value of the prediction is
+\begin{equation}
+\E[\hat{y}^{(i)}]=\E[X\delta_i w]=Xwp.
+\end{equation}
+This mean that the expected value of the mean square error when using dropout is obtain by replacing the parameters vector $w$ by $wp$. If we use matrices to express the expected cost we have
+\begin{equation}
+\begin{aligned}
+L_{MSE}(w) =& (X wp-y)^{\top}(X wp - y)\\
+=& p^2w^{\top}X^{\top}X w- 2pw^{\top}X^{\top}y + y^{\top}y
+\end{aligned}
+\end{equation}
+Now we take the derivatives with respect to $w$
+\begin{equation}
+\begin{aligned}
+\pd{}{w}L_{MSE}(w)
+=& 2p^2X^{\top}X w- 2pX^{\top}y
+\end{aligned}
+\end{equation}
+And making the dervatives equal to zero
+\begin{equation}
+\begin{aligned}
+2p^2X^{\top}X w^*- 2pX^{\top}y =& 0\\
+X^{\top}X w^*p =& X^{\top}y\\
+w^*p =& (X^{\top}X )^{-1}X^{\top}y\\
+\end{aligned}
+\end{equation}
 
 \section{Dropout as a Geometric Ensemble}
 
@@ -180,5 +276,136 @@ probability distribution proportional to a geometric mean over all dropout masks
 
 \section{Normalization}
 
-\end{document}
+(a) \textit{Show batchnorm and weightnorm are the same when you only have one
+layer and input feature $x$.}\\
 
+To normalize the minibatch of activations $B$, we do
+
+\begin{equation}
+B' = \frac{B - \mu}{\sigma}
+\end{equation}
+
+Where $\mu$ is the mean of $B$, and $\sigma$ is the standard deviation of $B$
+(with a small positive value added for numerical stability).
+
+We can replace $B$ with $w^\top x$, where $w$ is our weight matrix to see:
+
+\begin{equation}
+B' = \frac{w^\top x}{\sqrt{\mathrm{Var}[w^\top x]}} -
+     \frac{\mathbb{E}w^\top x}{\sqrt{\mathrm{Var}[w^\top x]}}
+\end{equation}
+
+Now notice the following about the unit vector
+
+\begin{equation}
+\frac{u}{||u||} = \frac{w^\top}{||w||}
+\end{equation}
+
+And
+
+\begin{equation}
+g=\frac{||w||_2}{\sqrt{\mathrm{Var}[w^{\top}x]}}
+\end{equation}
+
+Therefore if we assume $x$ and $w$ are independent and that $x$ has 0 mean:
+
+\begin{equation}
+B' = \frac{||w||_2}{\sqrt{\mathrm{Var}w^{\top}x}} \frac{w^\top}{||w||_2}x -
+     \frac{\mathbb{E}w^\top x}{\sqrt{\mathrm{Var}[w^{\top}x]}}
+\end{equation}
+
+\begin{equation}
+B' = g \frac{u}{||u||}x - \frac{\mathbb{E}w^\top x}{\sqrt{\mathrm{Var}[w^{\top}x]}}
+\end{equation}
+
+The expectation and standard deviation are constant under these conditions, so
+we get:
+
+\begin{equation}
+B' = g \frac{u}{||u||}x - c
+\end{equation} \\
+
+But we can ignore $c$ for this question. \\
+
+(b) \textit{Show the gradients of $L$ with respect to $u$ can be expressed as
+$sW^{*}\nabla_wL$.} \\
+
+From above:
+
+\begin{equation}
+B' = g \frac{u}{||u||}x
+\end{equation} \\
+
+With weightnorm, we explicity reparameterize the model to perform gradient
+descent in the new parameters $g$ and $u$ directly. By decoupling the norm of
+the weight vector $g$ and it's direction $\frac{u}{||u||}$, we can speed up
+convergence dramatically. \\
+
+If we differentiate through the above with respect to some new parameters v,
+we get: \\
+
+\begin{equation}
+\nabla_{g}L = \frac{\nabla_{u}L \cdot u}{||u||}, \nabla_{v}L = \frac{g}{||u||}\nabla_{u}L - \frac{g \nabla_{g}L}{||u||^{2}} u
+\end{equation}
+
+Where $\nabla_{u}L$ is the gradient with respect to the weights.
+
+Let's sub in $\nabla_{g}L$ into $\nabla_{v}L$ to get:
+
+\begin{equation}
+\nabla_{v}L = \frac{g}{||u||}\nabla_{u}L -
+    \frac{g \frac{\nabla_{u}L \cdot u}{||u||}}{||u||^{2}} u
+\end{equation}
+
+Or,
+
+\begin{equation}
+\nabla_{v}L = \frac{g}{||u||}\nabla_{u}L -
+    \frac{g \nabla_{u}L}{||u||^{3}} u^\top u
+\end{equation}
+
+This leads us to the forumulation:\\
+
+\begin{equation}
+\nabla_{v}L = \frac{g}{||u||} M_{u} \nabla_{u}L
+\end{equation}
+
+where,
+
+\begin{equation}
+M_{u} = Id - \frac{u^\top u}{||u||^{2}}
+\end{equation}
+
+where where $M_{u}$ is a projection matrix that projects onto the complement
+of the $u$ vector, and $Id$ is the identity matrix. \\
+
+(c) \textit{Explain a graph of different learning rates. }\\
+
+Let $\lambda$ be the learning rate. During learning we update $u$ via at step $k$
+using $v_k \leftarrow v_k - \lambda\nabla_vL$. \\
+
+As we said in the previous question, the matrix $M_u$ project onto the
+complement of $u$. Therefore, $\nabla_vL$ is equal to a constant times
+$M_u$, i.e., $u \perp \lambda\nabla_vL$. \\
+
+Since our update $v$ is proportional to $w$, the update must be orthogonal to
+$v$ and the norm increases by the Pythagorean theorem, which states that for any
+two orthogonal vectors $v$ and $v'$ the new weight vector must have the norm
+
+\begin{equation}
+||v'|| = \sqrt{||v||^2 + c^2 ||v||^2}
+\end{equation} \\
+
+if
+
+\begin{equation}
+c = || \lambda\nabla_vL || / ||v||
+\end{equation} \\
+
+This tells us a few things. If the norm of the gradients is small,
+$\sqrt{1 + c^2}$ is close to 1 and the norm of $v$ stops increasing. As the
+norm of the gradients grow, the norm of $v$ will also grow. Also, the norm of
+the updated parameter is proportional to the absoloute value of the learning
+rate. These observations explain the graph.
+
+\end{document}
