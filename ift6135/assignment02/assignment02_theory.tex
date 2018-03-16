@@ -139,8 +139,8 @@ are appropriate. \\
 \section{Dropout as Weight Decay}
 % see fundimental differences dropout vs/ weight decay
 % https://www.reddit.com/r/MachineLearning/comments/42nnpe/why_do_i_never_see_dropout_applied_in/
-(a) Let $\tilde{X}=X\odot\bm{\delta}$ where
-$\bm{\delta}=(\delta_1,...,\delta_n)$,
+(a) Let $\tilde{X}=X\odot\bm{\delta}$ where $\odot$ is the element wise product of matrices and
+$\bm{\delta}=(\delta_1,...,\delta_n)$, with
 \begin{equation}
 \delta_i=
 \begin{cases}
@@ -148,44 +148,75 @@ $\bm{\delta}=(\delta_1,...,\delta_n)$,
 \bm{1}, &1-p,
 \end{cases}
 \end{equation}
-and $\bm{0}$ and $\bm{1}$ are vecteur of dimension $1\times d$ of elements 0 and 1 respectively.\\
+and $\bm{0}$ and $\bm{1}$ are$1\times d$ vectors of elements 0 and 1.\\
 
-(b) Let $L_{MSE}$ be the cost function. The general formula for the cost is
+(b) Let $L_{MSE}$ be the loss function. The general formula for the loss function is as follows
+
 \begin{equation}
 L_{MSE}(w) = \frac{1}{n}\sum_{i=1}^n(\hat{y}^{(i)}-y^{(i)})^2
 \end{equation}
-where $\hat{y}^{(i)}$ is the the prediction and if we add dropout we have
+
+where $\hat{y}^{(i)}$ is the the dropout prediction when we add dropout so using part (a) we have
+
 \begin{equation}
 \label{MSE}
-L_{MSE}(w) = \frac{1}{n}\sum_{i=1}^n(x^{(i)}\delta_i w-y^{(i)})^2
+L_{MSE}(w) =\frac{1}{n}\sum_{i=1}^n(x^{(i)}\delta_i w-y^{(i)})^2
 \end{equation}
 
-(c) In this part, we will assume that the probability of dropping a input unit is $1-p$. The expected value of the prediction is
+(c) Assume dropout probability is $1-p$ for eacn input unit. Let $J_D(w, \delta)$
+be the network's loss function with dropout, so we minimize
+
+$$E\left[J_D(w,\delta)\right]= E_{\delta\sim Bernoulli(p)}\left[ \frac{1}{2}||(\delta\odot x)w-y||_2^2\right],$$
+
+We define $\delta\odot x:= \tilde{x}$, so
+
 \begin{equation}
-\E[\hat{y}^{(i)}]=\E[X\delta_i w]=Xwp.
+\begin{split}
+E\left[J_D(w.\delta)\right]&= E_\delta \left[\frac{1}{2}\left( \tilde{x}w-y\right)^T \left(\tilde{x}w-y \right) \right]\\
+&= E_\delta \left[ \frac{1}{2}w^T\tilde{x}^T \tilde{x}w -w\tilde{x}^T y +\frac{1}{2}yy^T\right]\\
+&= \frac{1}{2}w^T E_\delta\left[ \tilde{x}^T \tilde{x} \right]w-w E_\delta[\tilde{x}^T]y +\frac{1}{2}y^Ty\\
+\end{split}
 \end{equation}
-This mean that the expected value of the mean square error when using dropout is obtain by replacing the parameters vector $w$ by $wp$. If we use matrices to express the expected cost we have
+
+Using the covariance of two matrices, we can see that
+
 \begin{equation}
-\begin{aligned}
-L_{MSE}(w) =& (X wp-y)^{\top}(X wp - y)\\
-=& p^2w^{\top}X^{\top}X w- 2pw^{\top}X^{\top}y + y^{\top}y
-\end{aligned}
+\begin{split}
+E\left[J_D(w.\delta)\right]&=\frac{1}{2} w^T \left(E_\delta[\tilde{x}^T]E_\delta[\tilde{x}] +Cov_\delta \left [(\tilde{x}^T, \tilde{x})\right]\right)w -w E_\delta[\tilde{x}^T]y +\frac{1}{2}y^Ty\\
+&= \frac{1}{2}w^T p^2 x^T x w+ \frac{1}{2}w^T p(1-p) \left( diag(x^T x)^{1/2}\right)^2 w -wpx^Ty+\frac{1}{2}y^Ty,
+\end{split}
 \end{equation}
-Now we take the derivatives with respect to $w$
+
+Where the  $Cov_\delta(\tilde{x},\tilde{x}^T)$ is shown in the following matrix
+
+\[
+\begin{bmatrix}
+    x_{1}^2 var(\delta_1)  \hdots & 0 \\
+
+    \vdots   & \ddots \\
+   0 & \dots  & x_{n}^2 var(\delta_n)
+\end{bmatrix}
+\]
+where $var(\delta_i)=p(1-p)$ for each $i$. So we get a diagonal of the matrix $(x^Tx)$.\\
+To find the minimizing point we put the derivative (with respect to w) equal to zero, so we have
+\begin{equation}\label{Dropout}
+\left[\frac{\partial E[J_D]}{\partial w}\right]= p^2 x^Txw+p(1-p) \Gamma^2 w- px^Ty=0
+\end{equation}
+ Thus
+ $$pw\left( x^Tx+ \frac{(1-p)}{p} \Gamma^2\right) -x^Ty=0$$
+ and this gives us
+ $$w^*= pw = \left( x^Tx+\frac{(1-p)}{p}\Gamma^2\right)^{-1}x^Ty$$
+The weight that minimize the cost when using $L2$-regularization(deep learning book) is given by
+
 \begin{equation}
-\begin{aligned}
-\pd{}{w}L_{MSE}(w)
-=& 2p^2X^{\top}X w- 2pX^{\top}y
-\end{aligned}
+ w = \left(X^{\top}X + \alpha I\right)^{-1}X^{\top}y
 \end{equation}
-And making the dervatives equal to zero
-\begin{equation}
-\begin{aligned}
-2p^2X^{\top}X w^*- 2pX^{\top}y =& 0\\
-X^{\top}X w^*p =& X^{\top}y\\
-w^*p =& (X^{\top}X )^{-1}X^{\top}y\\
-\end{aligned}
-\end{equation}
+
+where $I$ is the identity matrix and $\alpha$ is the regularization parameter.
+We can see that both parameter have very similar form. Hence, dropout and L2
+regularization should lead to similar regularization effect. The difference
+between is the diagonal matrix $Gamma$. With dropout,
+it is equal to the covariance matrix where with L2 regularization it is identity matrix.
 
 \section{Dropout as a Geometric Ensemble}
 
@@ -282,10 +313,10 @@ layer and input feature $x$.}\\
 To normalize the minibatch of activations $B$, we do
 
 \begin{equation}
-B' = \frac{B - \mu}{\sigma}
+B' = \frac{B - \delta}{\sigma}
 \end{equation}
 
-Where $\mu$ is the mean of $B$, and $\sigma$ is the standard deviation of $B$
+Where $\delta$ is the mean of $B$, and $\sigma$ is the standard deviation of $B$
 (with a small positive value added for numerical stability).
 
 We can replace $B$ with $w^\top x$, where $w$ is our weight matrix to see:
