@@ -12,7 +12,7 @@ import numpy as np
 # Please change the filename according to your names
 # Submit **only*** this file on Studium, NOT a .zip, NOT a full folder
 # Remaining of the homework needs to be handed (in paper) before the demo.
-
+#
 def insert_sort(A):
     for idx in range(1, len(A)):
 
@@ -26,6 +26,14 @@ def insert_sort(A):
         A[position] = this_val
 
     return(A)
+
+
+def get_idx(seq, size):
+        idx = []
+        split = 1.0/size*len(seq)
+        for i in range(size):
+                idx.append(seq[int(round(i*split)):int(round((i+1)*split))])
+        return(idx)
 
 
 def merge(A, B):
@@ -60,14 +68,12 @@ def mergesort4(A,n):
 
     else:
 
-        idx = list(range(0, len(A), len(A)//4))
-        if len(idx) == 4:
-            idx.append(len(A))
+        idx = get_idx(list(range(len(A))), 4)
 
-        l1 = A[idx[0]:idx[1]]
-        l2 = A[idx[1]:idx[2]]
-        l3 = A[idx[2]:idx[3]]
-        l4 = A[idx[3]:idx[4]]
+        l1 = A[idx[0][0]:idx[1][0]]
+        l2 = A[idx[1][0]:idx[2][0]]
+        l3 = A[idx[2][0]:idx[3][0]]
+        l4 = A[idx[3][0]:idx[3][-1]+1]
 
         sl1 = mergesort4(l1, len(l1))
         sl2 = mergesort4(l2, len(l2))
@@ -85,6 +91,9 @@ def mergesort4(A,n):
 # Be sure that it does not yield any error and that the two given tests give "True".
 if __name__=="__main__":
 
+    #A = [4, 5, 6, 3, 2, 8, 9, 9]
+    #mergesort4(A, len(A))
+
     A = [2, 2, 1, 0, 4]
     print("Array : ", A)
     #print(mergesort4(A, len(A)))
@@ -93,7 +102,7 @@ if __name__=="__main__":
 
     B = np.random.randint(low = 0, high = 100, size = (20))
     print("Array : ", B)
-    print(mergesort4(B, len(B)))
+    #print(mergesort4(B, len(B)))
     #print(sorted(B))
     test2 = mergesort4(B, len(B)) == sorted(B)
     print("correctly sorted?", test2)
