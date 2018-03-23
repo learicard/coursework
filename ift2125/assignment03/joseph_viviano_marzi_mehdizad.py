@@ -13,6 +13,8 @@ import numpy as np
 # Submit **only*** this file on Studium, NOT a .zip, NOT a full folder
 # Remaining of the homework needs to be handed (in paper) before the demo.
 #
+
+
 def insert_sort(A):
     for idx in range(1, len(A)):
 
@@ -91,25 +93,16 @@ def mergesort4(A,n):
 # Be sure that it does not yield any error and that the two given tests give "True".
 if __name__=="__main__":
 
-    #A = [4, 5, 6, 3, 2, 8, 9, 9]
-    #mergesort4(A, len(A))
-
     A = [2, 2, 1, 0, 4]
     print("Array : ", A)
-    #print(mergesort4(A, len(A)))
     test1 = mergesort4(A, len(A)) == sorted(A)
     print("correctly sorted?", test1)
 
     B = np.random.randint(low = 0, high = 100, size = (20))
     print("Array : ", B)
-    #print(mergesort4(B, len(B)))
-    #print(sorted(B))
     test2 = mergesort4(B, len(B)) == sorted(B)
     print("correctly sorted?", test2)
 
     print("Votre note serait =", np.mean([test1, test2])*100, "%" )
-
-
-
 
 
