@@ -19,6 +19,8 @@ complete
 + **machine-learning**: complete work on [machine learning](https://www.coursera.org/learn/machine-learning).
 + **neural-networks**: complete work on [neural networks for machine learning](https://www.coursera.org/learn/neural-networks)
 + **scinet-dl**: a short course by scinet on deep learning, 2017.
++ **sysadmin**: course on debian system administration, 2016.
+
 
 references
 ----------
