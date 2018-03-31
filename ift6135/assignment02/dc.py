@@ -184,6 +184,8 @@ def evaluate(clf, dataset):
         eval_pred = clf.predict(eval_fwd)
         _, predicted = torch.max(eval_pred.data, 1)
 
+        import IPython; IPython.embed()
+
         total += eval_pred.size(0)
         correct += predicted.eq(y_eval.data).cpu().sum()
 
@@ -313,6 +315,12 @@ def main():
     plt.xlabel('epoch')
     plt.ylabel('accuracy')
     plt.savefig('10_accuracy.jpg')
+
+    batch_size = 16
+    loaders = load_dc(batch_size=batch)
+
+    evaluate(best_model['clf'], loaders[2])
+
 
 
 if __name__ == '__main__':
