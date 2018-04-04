@@ -64,7 +64,7 @@ def calc_weight(A):
             vals[1] = w[idx_2]
             w[i+1] = np.sum(vals) # shift iterator here to align length of w & A
 
-        return(int(np.sum(w)))
+        return(int(w[-1]))
 
 
 def find_m(w):
