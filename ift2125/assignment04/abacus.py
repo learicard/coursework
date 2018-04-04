@@ -43,78 +43,107 @@ def is_abacus(A):
 
 def calc_weight(A):
     if not is_abacus(A):
+        import IPython; IPython.embed()
         return(-1)
 
     else:
-        # first, calculate all A[1,:] + A[2,:]
-        weights = np.sum(A, axis=0)
+        m = A.shape[1]
 
-        # remove the first entry (techinically unnessicary since the first entry
-        # is always = 0), and add 1, for the base case w(0) = 1
-        w = np.sum(weights[1:]) + 1
+        # initialize the w vector to hold all weights i=0:m (n.b): A has columns
+        # ranging from 1:m, no 0th column.
+        w = np.zeros((m+1))
 
-        return(int(w))
+        # add 1, for the base case w(0) = 1
+        w[0] = 1
+
+        for i in range(0, m):
+            vals = np.zeros((2))
+            idx_1 = int(A[0, i])
+            idx_2 = int(A[1, i])
+            vals[0] = w[idx_1]
+            vals[1] = w[idx_2]
+            w[i+1] = np.sum(vals) # shift iterator here to align length of w & A
+
+        return(int(np.sum(w)))
 
 
 def find_m(w):
     """given a weight, find the smallest abacus"""
     # first, note that the maximum weight of an abacus is (2*n!)+1
     # so we can first easily find the minimum size of the abacus by
-    m = 1
-    test_val =  1 # base case
+    m, max_weight = 0, 0
 
-    while test_val < w:
-        test_val += (2*m)
+    while max_weight < w:
         m += 1
+        max_weight = calc_weight(make_abacus(m, maxval=True))
 
     print('w={}, m={}'.format(w, m))
     return(m)
 
 
 def increment(i, j):
-    """moves leftword through matrix, column-wise"""
-
-    # move down in column
-    j += 1
+    """moves rightword through matrix, down columns"""
+    j += 1 # move down in column
     if j == 2:
-        j = 0
-
-        # move back one column
-        if i > 0:
-            i -= 1
+        j = 0  # goto top of next column
+        i += 1 #
 
     return(i, j)
 
 
-def fill_abacus(A, w, i=1, j=0):
+def deccrement(i, j):
+    """moves leftword through matrix, up column"""
+    j -= 1 # move up in column
+    if j == -1:
+        j = 1  # gotob bottom of previous column
+        i -= 1 #
+
+    return(i, j)
+
+
+def fill_abacus(A, w, i=0, j=0):
     """Fills abacus such that it is legal and has the expected weight"""
+    curr_weight = calc_weight(A) # intialize current_weight
+    #print('A={}\nc={}/{}, i={}, j={}\n'.format(A, curr_weight, w, i, j))
 
-    curr_weight = calc_weight(A)
-    if curr_weight < w:
-        if w - curr_weight >= i:
-            print('adding {}'.format(i))
-            A[j, i] = i
+    m = A.shape[1]
 
+    curr_val = i # the maximum value allowed in index=i (because python uses
+                 # 0-based indexing
+
+    # terminate this branch -- impossible case
+    if i >= m:
+        return(A)
+
+    while curr_weight < w and curr_val >= 0:
+        curr_weight = calc_weight(A) # needed to break out of while loop
+        #print('adding {} at [{},{}]'.format(curr_val, i, j))
+
+        A[j, i] = curr_val
+        curr_weight = calc_weight(A) # updates value
+
+        #print(chr(27) + "[2J")
+        print(A)
+        print('c={}/{}, i={}, j={}\n'.format(curr_weight, w, i, j))
+
+        # FAILED: went over w, reset value at [j, i] and try again
+        if curr_weight > w:
+            A[j, i] = 0
+            return(A)
+
+        # SUCCESS: exactly correct, just return
+        elif curr_weight == w:
+            return(A)
+
+        # WE NEED TO GO DEEPERER
         else:
-            print('adding {}'.format(np.abs(curr_weight - w)))
-            A[j, i] = w - curr_weight
+            next_i, next_j = increment(i, j)
+            A = fill_abacus(A, w, i=next_i, j=next_j)
+            curr_val -= 1
 
-        i, j = increment(i, j)
-
-        print('A={}\nc={}/{}, i={}, j={}'.format(A, curr_weight, w, i, j))
-        A = fill_abacus(A, w, i=i, j=j)
-
-    elif curr_weight == w:
-        print('SUCCESS\nA={}\nc={}/{}, i={}, j={}'.format(A, curr_weight, w, i, j))
-        return(A)
-    else:
-        print('FAILED\nA={}\nc={}/{}, i={}, j={}'.format(A, curr_weight, w, i, j))
-        A[i, j] = 0
-        return(A)
-
-    # filled_A will be returned to process that spawned call if we don't go over
-    # the limit
-    return(A)
+    # FAILED: ran out of i to test
+    #A[j, i] = 0
+    return(np.hstack((A, np.zeros((2, 1)))))
 
 
 # 3a
@@ -125,7 +154,7 @@ w = calc_weight(A)
 w = 70
 m = find_m(w)
 A = np.zeros((2, m))
-A = fill_abacus(A, w, i=m-1, j=0)
+A = fill_abacus(A, w, i=1, j=0)
 
 import IPython; IPython.embed()
 
