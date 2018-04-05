@@ -31,19 +31,18 @@ def is_abacus(A):
 
     # ensures all entries [:, i] in A are < i
     test =  make_abacus(m, maxval=True)
-    if np.sum(A[:, 1:] > test[:, 1:]):
+    if np.sum(A > test):
         return(False)
 
     # finally ensure [:, 0] is 0
-    if np.sum(A[:,0]):
-        return(False)
+    #if np.sum(A[:,0]):
+    #    return(False)
 
     return(True)
 
 
 def calc_weight(A):
     if not is_abacus(A):
-        import IPython; IPython.embed()
         return(-1)
 
     else:
@@ -57,12 +56,10 @@ def calc_weight(A):
         w[0] = 1
 
         for i in range(0, m):
-            vals = np.zeros((2))
             idx_1 = int(A[0, i])
             idx_2 = int(A[1, i])
-            vals[0] = w[idx_1]
-            vals[1] = w[idx_2]
-            w[i+1] = np.sum(vals) # shift iterator here to align length of w & A
+            # shift iterator here to align length of w & A
+            w[i+1] = w[idx_1] + w[idx_2]
 
         return(int(w[-1]))
 
@@ -101,60 +98,58 @@ def deccrement(i, j):
     return(i, j)
 
 
-def fill_abacus(A, w, i=0, j=0):
+def fill_abacus(A, w, i=1, j=0):
     """Fills abacus such that it is legal and has the expected weight"""
     curr_weight = calc_weight(A) # intialize current_weight
-    #print('A={}\nc={}/{}, i={}, j={}\n'.format(A, curr_weight, w, i, j))
 
+    # the max value allowed in index=i (b/c python uses 0-based indexing)
+    curr_val = i
     m = A.shape[1]
 
-    curr_val = i # the maximum value allowed in index=i (because python uses
-                 # 0-based indexing
-
-    # terminate this branch -- impossible case
+    # terminate illegal node i cannot be greater than the length of the matrix
     if i >= m:
         return(A)
 
     while curr_weight < w and curr_val >= 0:
-        curr_weight = calc_weight(A) # needed to break out of while loop
-        #print('adding {} at [{},{}]'.format(curr_val, i, j))
 
-        A[j, i] = curr_val
-        curr_weight = calc_weight(A) # updates value
-
-        #print(chr(27) + "[2J")
-        print(A)
-        print('c={}/{}, i={}, j={}\n'.format(curr_weight, w, i, j))
-
-        # FAILED: went over w, reset value at [j, i] and try again
-        if curr_weight > w:
-            A[j, i] = 0
-            return(A)
+        curr_weight = calc_weight(A)
 
         # SUCCESS: exactly correct, just return
-        elif curr_weight == w:
+        if curr_weight == w:
+            print('success!')
             return(A)
 
-        # WE NEED TO GO DEEPERER
+        A[j, i] = curr_val
+        print('A={}\nc={}/{}, i={}, j={}'.format(A, calc_weight(A), w, i, j))
+
+        # FAILED: went over w, reset value at [j, i] and try again
+        if calc_weight(A) > w:
+            A[j, i] = 0
+            print('failed :( :( :(')
+            return(A)
+
+        # go to child node
         else:
             next_i, next_j = increment(i, j)
             A = fill_abacus(A, w, i=next_i, j=next_j)
             curr_val -= 1
 
-    # FAILED: ran out of i to test
-    #A[j, i] = 0
-    return(np.hstack((A, np.zeros((2, 1)))))
+    #  if we have explored all options for m and not found a solution, try m+1
+    if np.sum(A) == 0:
+        A = fill_abacus(np.zeros((2, m+1)), w)
 
+    # go to parent node
+    return(A)
 
 # 3a
-A = make_abacus(20)
-w = calc_weight(A)
+#A = make_abacus(20)
+#w = calc_weight(A)
 
 # 3b
-w = 70
+w = 20
 m = find_m(w)
 A = np.zeros((2, m))
-A = fill_abacus(A, w, i=1, j=0)
+A = fill_abacus(A, w)
 
 import IPython; IPython.embed()
 
