@@ -168,7 +168,7 @@ def fill_abacus(A, w, i=1, j=0):
             return(A)
 
         A[j, i] = curr_val
-        #print('A={}\nc={}/{}, i={}, j={}'.format(A, abacus_weight(A), w, i, j))
+        print('A={}\nc={}/{}, i={}, j={}'.format(A, abacus_weight(A), w, i, j))
 
         # FAILED: went over w, reset value at [j, i] and try again
         if abacus_weight(A) > w:
@@ -217,10 +217,9 @@ if __name__=="__main__":
     print("A3", int(abacus_weight(A3)) == -1)
     print("A4", int(abacus_weight(A4)) == -1)
 
+    print("3b:")
     w1 = 4
     result1 = list([[0,1],[0,1]])
-
-    print("3b:")
     A = minimal_size_abacus(w1)
     print(list(minimal_size_abacus(w1)) == result1)
 

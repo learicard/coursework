@@ -151,5 +151,3 @@ m = find_m(w)
 A = np.zeros((2, m))
 A = fill_abacus(A, w)
 
-import IPython; IPython.embed()
-
