@@ -61,13 +61,137 @@
 
 \subsection{Transformation of Gaussian Noise} \\
 
+First let's define $\bm{z}$ as a linear transformation applied to a gaussian 
+distribution $\bm{\epsilon}$: \\
+
+$$\bm{z}= \mu(\bm{x})+ \sigma(\bm{x})\odot\bm{\epsilon} \quad \text{where}\quad \bm{\epsilon} \sim \mathcal{N}(0, \bm{I}).$$ \\
+
+The expectation of $\bm{z}$ is as follows. Crucially, note that the expectation
+of our normal distribution $\mathbb{E}\bm{\epsilon} = 0$: \\
+
+\begin{equation}
+\begin{split}
+\mathbb{E}(\bm{z})
+&= \mathbb{E}(\mu(\bm{x}))+\mathbb{E}\left(\sigma(\bm{x})\odot \bm{\epsilon}\right)\\
+&= \mu(\bm{x})+ \sigma(\bm{x})\odot \mathbb{E}(\bm{\epsilon})\\
+&= \mu(\bm(x))+ \sigma(\bm{x})\odot \bm{0}
+\end{split}
+\end{equation}
+
+Therefore, it follows that $ \mathbb{E}(\bm{z}) = \mu(\bm{x}) $. We can do a 
+similar calculation for $\sigma^2(\bm{z})$: \\
+
+\begin{equation}
+\begin{split}
+\sigma^2(\bm{z})
+&= \mathbb{E}({\bm{z}^2})- \mathbb{E}^2(\bm{z})\\
+&= \mathbb{E} \left[ \left(\mu(\bm{x}) + \sigma(\bm{x})\odot\bm{\epsilon} \right)^2\right] - \mu(\bm{x})^2\\
+&= \mathbb{E}\left[ \left( \sigma(\bm{x})\odot\bm{\epsilon}\right)^2\right]+ 2 \mu(\bm{x}) \mathbb{E}\left[ \sigma(\bm{x}\odot \bm{\epsilon})\right]\\
+&= \mathbb{E}\left[ \left( \sigma(\bm{x})\odot\bm{\epsilon}\right)^2\right]\\
+&= \sigma^2(\bm{x})\odot \mathbb{E}\left[ \bm{\epsilon}^2\right]\\
+&= \sigma^2(\bm{x})\odot \bm{I}\\
+&= \sigma^2(\bm{x})
+\end{split}
+\end{equation}
+
+So $\bm{z}$ has a gaussian with $\bm{z}\sim \mathcal{N}(\mu(\bm{x}), \sigma^2(\bm{x}))$.\\
+
+Now let's look at the $k^2$ dimensional output of a neural network: 
+$\bm{z} = \mu(\bm{x}) + S(\bm{x})\odot\bm{\epsilon} $, where $S(\bm{x})$ is our
+output. This gives us the same as for eq 1.1, replacing $\sigma$ for $S$: \\ 
+
+\begin{equation}
+\begin{split}
+\mathbb{E}(\bm{z})&= \mathbb{E}(\mu(\bm{x}))+\mathbb{E}\left(S(\bm{x})\odot \bm{\epsilon}\right) \\
+&= \mu(\bm{x})+ S(\bm{x})\odot \mathbb{E}(\bm{\epsilon}) \\
+&= \mu(\bm(x))+ S(\bm{x})\odot \bm{0}\\
+&= \mu(\bm{x})
+\end{split}
+\end{equation}
+
+In contrast, the calculations for variance leads to a different result:
+
+\begin{equation}
+\begin{split}
+\sigma^2(\bm{z})&= \mathbb{E}({\bm{z}^2})- \mathbb{E}^2(\bm{z})\\
+&= \mathbb{E} \left[ \left(\mu(\bm{x})+ S(\bm{x})\odot\bm{\epsilon} \right)^2\right] - \mu(\bm{x})^2\\
+&= \mathbb{E}\left[ \left( S(\bm{x})\odot\bm{\epsilon}\right)^2\right]+ 2 \mu(\bm{x}) \mathbb{E}\left[ S(\bm{x}\odot \bm{\epsilon})\right]\\
+&= \mathbb{E}\left[ \left( S(\bm{x})\odot\bm{\epsilon}\right)^2\right]\\
+&= S(\bm{x}) S(\bm{x})^T\odot \mathbb{E}\left[ \bm{\epsilon}^2\right]\\
+&= S(\bm{x}) S(\bm{x})^T\odot\bm{I}\\
+&=diag \left(S(\bm{x}) S(\bm{x})^T\right)
+\end{split}
+\end{equation}
+
+Whereas before the variance term of our distribution was 
+$\sigma^2(\bm{x})$, it is now $diag \left(S(\bm{x}) S(\bm{x})^T\right)$, as in 
+$\bm z \sim \mathcal{N}(\mu(\bm{x}), diag \left(S(\bm{x}) S(\bm{x})^T\right) )$.\\
+
 \subsection{Encoders vs. Mean Fields} \\
+
+In general, the inference network used in in a variational autoencoder will 
+outperform traditional mean field methods which factorize the variational
+distribution as a product of distributions. More specifically, mean field 
+variational inference assumes the variational family factorizes: \\
+
+$$ q(z_1, z_2, ..., z_m) = \prod_{j=1}^m q(z_j) $$
+
+with each variable being independent. In practice, however, this is rarely true,
+and the dependencies between these variables makes the posterior hard to work 
+with. The mean field approach requires solutions to the expectations taken on 
+the posterior, which is generally  intractable. The variational autoencoder gets 
+around this requirement by only approximating the posterior using the 
+probabilistic encoder $ q_{\phi}(z|x) $, which approximates the true generating
+model $ p_{\theta}(x,z) $, and where the parameters $\phi$ and $\theta$ are 
+optimized jointly by the variational autoencoder algorithm.
 
 \section{Importance Weighted Autoencoder} \\
 
 \subsection{IWLB as a Lower Bound on log Likelihood} \\
 
+We can show that IWLB is a lower bound on the log likelihood $\log p(x)$ by 
+using Jensen's inequality (i.e., that a secant line of a concave function 
+lies below the graph), the fact that $\log$ is concave, and the fact that 
+$p(x,z_i)= p(x|z_i)p(x)$ as follows: \\
+
+\begin{equation}
+\begin{split}
+\mathcal{L}_k&= \mathbb{E}\left[\log \frac{1}{k} \sum_{i=1}^k \frac{p(x,z_i)}{q(z_i|x)} \right] \\
+&\leq \log \mathbb{E }\left[\frac{1}{k}\sum_{i=1}^k \frac{p(x,z_i)}{q(z_i|x)} \right]\\
+&= \log \frac{1}{k}\mathbb{E}\left[ \frac{p(x,z_i)}{q(z_i|x)}\right]\\
+&= \log \frac{1}{k} \sum_{i=1}^k \mathbb{E} (p(x))\\
+&= \log (p(x))
+\end{split}
+\end{equation}
+
 \subsection{IWLB with k=2 is tighter than ELBO with k=1} \\
+
+First, observe the VAE loss function. Isn't it nice?
+
+\begin{equation}
+\begin{split}
+\log p(x) &\geq \mathbb{E}_{q(z|x)} \left[\log \frac{p(x,z)}{q(z|x)} \right]\\
+&= \log (p(x))- D_{KL} \left(q(z|x)|| p(z|x) \right)\\
+&= \mathcal{L}_1
+\end{split}
+\end{equation}
+
+If we can demonstrate that $\mathcal{L}_K$ approaches $\log p(x)$ as $K$ grows, then we can claim that $\mathcal{L}_2$ is a tighter bound than ELBO. \\
+
+Let $I= \{1,2\}$ and $\frac{p(x,z_1)}{p(z_1|x)} \leq \frac{p(x,z_2)}{p(z_2|x)}$.
+
+\begin{equation}
+\begin{split}
+\mathcal{L}_2&= \mathbb{E} \left[\log  \frac{1}{2}\left(\frac{p(x,z_1)}{q(z_1|x)}+\frac{p(x,z_2)}{q(z_2|x)}\right)\right]\\
+&\geq  \mathbb{E} \left[\log  \frac{1}{2}\left(\frac{p(x,z_1)}{q(z_1|x)}+\frac{p(x,z_1)}{q(z_1|x)}\right)\right]\\
+&= \mathbb{E} \left[\log \frac{p(x,z_1)}{q(z_1|x)}\right]\\
+&= \mathcal{L}_1
+\end{split}
+\end{equation}
+
+When we sub in the smaller $\frac{p(x,z_1)}{q(z_1|x)}$ in place of the 
+larger $\frac{p(x,z_2)}{q(z_2|x)}$, our answer shows that 
+$\mathcal{L}_1 \leq \mathcal{L}_2 \leq \log p(x)$.\\
 
 \section{Maximum Likelihood for Generative Adversarial Networks} \\
 
