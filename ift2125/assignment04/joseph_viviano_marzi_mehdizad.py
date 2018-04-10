@@ -32,7 +32,20 @@ def make_abacus(m, maxval=False):
 
 
 def is_abacus(A):
-    """ """
+    """
+    Checks the following 4 conditions:
+    1) The abacus can be a numpy array (i.e., is rectangular)
+    2) The abacus is 2D
+    3) The abacus is 2xm
+    4) The abacus entries are all valid 
+    """
+
+    # if A is two lists [[A], [B]] of different lengths, this will fail
+    try:
+        A = np.array(A)
+    except:
+        return(False)
+
     # abacus must be 2xm
     dims = np.shape(A)
     if len(dims) > 2:
@@ -55,6 +68,8 @@ def is_abacus(A):
 
 
 def abacus_weight(A):
+    """ calculates weight of abacus, returns -1 if A is not an abacus """
+
     if not is_abacus(A):
         return(-1)
 
@@ -92,7 +107,7 @@ def find_m(w):
 
 
 def increment(i, j):
-    """moves rightword through matrix, down columns"""
+    """ moves rightword through matrix, down columns """
     j += 1 # move down in column
     if j == 2:
         j = 0  # goto top of next column
@@ -102,7 +117,7 @@ def increment(i, j):
 
 
 def deccrement(i, j):
-    """moves leftword through matrix, up column"""
+    """ moves leftword through matrix, up column """
     j -= 1 # move up in column
     if j == -1:
         j = 1  # goto bottom of previous column
@@ -159,16 +174,16 @@ def fill_abacus(A, w, i=1, j=0):
         return(A)
 
     # at this node, try all valid values at [j, i], descending
-    while curr_weight < w and curr_val >= 0:
+    while curr_weight <= w and curr_val >= 0:
 
         curr_weight = abacus_weight(A)
 
-        # SUCCESS: exactly correct, just return
+        # SUCCESS: exactly correct, just return all the way up the tree
         if curr_weight == w:
             return(A)
 
         A[j, i] = curr_val
-        print('A={}\nc={}/{}, i={}, j={}'.format(A, abacus_weight(A), w, i, j))
+        #print('Abacus:\n{}\nc={}/{}, i={}, j={}'.format(A, abacus_weight(A), w, i, j))
 
         # FAILED: went over w, reset value at [j, i] and try again
         if abacus_weight(A) > w:
@@ -191,6 +206,14 @@ def fill_abacus(A, w, i=1, j=0):
 
 
 def minimal_size_abacus(w):
+    """
+    First, calculates the minimum sized abacus that can contain
+    weight w, which we call m. Then, constructs a 2xm all-zero
+    abacus, which is submitted to the backtracking fill_abacus
+    function. This function expects a numpy array. The result is
+    finally returned as a list. 
+    """
+    
     # Input : integer w>=1
     # Output : abaque of minimal size
     m = find_m(w)
@@ -222,5 +245,4 @@ if __name__=="__main__":
     result1 = list([[0,1],[0,1]])
     A = minimal_size_abacus(w1)
     print(list(minimal_size_abacus(w1)) == result1)
-
 
