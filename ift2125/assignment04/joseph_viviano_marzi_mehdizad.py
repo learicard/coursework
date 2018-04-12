@@ -37,7 +37,7 @@ def is_abacus(A):
     1) The abacus can be a numpy array (i.e., is rectangular)
     2) The abacus is 2D
     3) The abacus is 2xm
-    4) The abacus entries are all valid 
+    4) The abacus entries are all valid
     """
 
     # if A is two lists [[A], [B]] of different lengths, this will fail
@@ -183,7 +183,8 @@ def fill_abacus(A, w, i=1, j=0):
             return(A)
 
         A[j, i] = curr_val
-        #print('Abacus:\n{}\nc={}/{}, i={}, j={}'.format(A, abacus_weight(A), w, i, j))
+        #print('Abacus:\n{}\nc={}/{}, i={}, j={}'.format(
+        #    A, abacus_weight(A), w, i, j))
 
         # FAILED: went over w, reset value at [j, i] and try again
         if abacus_weight(A) > w:
@@ -211,9 +212,9 @@ def minimal_size_abacus(w):
     weight w, which we call m. Then, constructs a 2xm all-zero
     abacus, which is submitted to the backtracking fill_abacus
     function. This function expects a numpy array. The result is
-    finally returned as a list. 
+    finally returned as a list.
     """
-    
+
     # Input : integer w>=1
     # Output : abaque of minimal size
     m = find_m(w)
