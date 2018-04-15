@@ -2,8 +2,20 @@
 
 import numpy as np
 
-def optimize(weight, value, capacity):
+def optimize(weight, value, capacity, multiplier):
 
+    # compute new multiplied weights, values
+    new_weights = []
+    new_values = []
+
+    for i, mult in enumerate(multiplier):
+        new_weights.extend([weight[i]]*mult)
+        new_values.extend([value[i]]*mult)
+
+    weight = new_weights
+    value = new_values
+
+    # initialize values
     n_objects = len(weight)
 
     T = np.zeros((n_objects+1, capacity+1)) # +1 so we have base case capacity=0
@@ -55,9 +67,12 @@ def optimize(weight, value, capacity):
 
 weight = [1, 2, 5, 6, 7]
 value  = [1, 6, 18, 22, 28]
-capacity = 11
+multiplier = [2, 2, 2, 2, 2]
+capacity = 22
 
-T, objects, max_value = optimize(weight, value, capacity)
+T, objects, max_value = optimize(weight, value, capacity, multiplier)
+
+#pt.print(T)
 
 print('knapsack weight={}, objects:\n+ weight = {}\n+ value = {}\n'.format(
     capacity, value, max_value))
