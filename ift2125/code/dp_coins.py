@@ -2,60 +2,54 @@
 
 import numpy as np
 
-import sys
-
-def get_ways(n, c):
+def get_ways(req_change, coinlist):
     """ """
-    n_change = n + 1  # add a base case of required change = 0
-    n_coins = len(c) + 1
+    n_change = req_change + 1  # add a base case of required change = 0
+    n_coins = len(coinlist) + 1
 
-    T = np.zeros((n_change, n_coins))
+    T = np.zeros((n_coins, n_change))
 
     # initialize boundary values to inf, so they never win the min (below)
-    for i in range(1, n_change, 1):
-        T[i, 0] = np.inf
+    for j in range(1, n_change, 1):
+        T[0, j] = np.inf
 
     # i is the amount of money we need to make change for
-    for i in range(1, n_change, 1):
-        for j in range(1, n_coins, 1):
+    for i in range(1, n_coins, 1):
+        for j in range(1, n_change, 1):
 
-            if i == 1:
-                # smallest denomination case, just counts up in units of c[0]
-                T[i, j] = 1 + T[0, j-c[0]]
+            # last_val is the value remaining if we are to add a single coin
+            # of the current denomination, which removes n coins of the previous
+            # denomination
+            last_val = j-coinlist[i-1]
 
-            elif i < c[j-1]:
-                #print('increment')
-                # this value is smaller than the next largest denomination
-                # so we add one to the previous value
-                T[i, j] = 1 + T[i-1, j]
-
+            # last_val cannot be less than zero, because python indexing wraps
+            if last_val < 0:
+                T[i, j] = T[i-1, j]
             else:
-                # take the minimum of adding one of the previous denominations
-                # or using one new denomination
-                T[i, j] = min(T[i, j-1], 1+T[i-c[j-1], j])
-
-            #print('change={}, denom={}\n{}\n'.format(i, c[j-1], T))
+                T[i, j] = min(T[i-1, j], 1 + T[i, last_val])
 
 
     # find coins used
-    i = n_change-1
-    j = n_coins-1
+    i = n_coins-1
+    j = n_change-1
     coins_used = []
 
-    while i != 0:
+    while j > 0:
+        print('i={},j={}'.format(i,j))
+        print(T)
 
-        if T[i, j] == T[i, j-1]:
-            j -= 1
-        elif T[i, j] != T[i, j-1]:
-            coins_used.append(c[j-1])
-            i -= c[j-1]
+        if T[i, j] == T[i-1, j]:
+            i -= 1
+        elif T[i, j] != T[i-1, j]:
+            coins_used.append(coinlist[i-1])
+            j -= coinlist[i-1]
 
     return(T, coins_used, T[-1, -1])
 
-n = 8
-c = [1, 4, 6]
-T, coins, answer = get_ways(n, c)
+req_change = 8
+coinlist = [1, 4, 6]
+T, coins, answer = get_ways(req_change, coinlist)
 
-print('problem: change for {}, using coins={}'.format(n, c))
+print('problem: change for {}, using coins={}'.format(req_change, coinlist))
 print('solution:\n{}\n\nusing {} coins: {}'.format(T, answer, coins))
 
