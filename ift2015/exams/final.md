@@ -239,8 +239,10 @@ colissions
 b) Is M is prime, then the values are least likely to cluster (group in the
 same area of the table), no matter the distribution of the input values.
 
+
 final 2015
 ----------
+
 1. 2-3 trees
 As an example, we discussed in detail how to insert and remove keys in a tree
 2-3. In both cases, it was necessary from time to time to go up in the tree, and
@@ -253,6 +255,8 @@ where it is possible to insert the key by going back to the penultimate level.
 (b) It is easy to say "back in the tree", but how to do that in the practice?
 A tree normally has only pointers that go in the direction "root towards
 leaves". Explain.
+
+Recursive algorithm, to build a stack (pop to go up).
 
 2. (a) Prim algorithm (or Dijkstra algorithm)
 In Prim's algorithm, we make an outer loop on the N nodes of the
@@ -272,6 +276,8 @@ threads. If going from left to right we follow a normal link to this or that
 step, we must then go down to the left until we find a string on the left. For
 each node, in principle we could go down theta(N) knots, and yet, the total cost
 of the course is not theta(N^2), it is rather theta(N). Explain.
+
+You only visit (get the data out of) each node one time.
 
 3. Gravestones
 Using the open address for "hashing", we could use sentinels ("tombstone") to
@@ -364,17 +370,11 @@ So we do minimum of Tright:
 zig
 
   2
- / \
-3   4
+   \
+    4
+   /
+  3
 
-
-zag
-
-2
- \
-  4
- /
-3
 
 We do this because we need to join with Tleft, which in our case does not exist.
 But the algorithm needs to account for the possiblity.
@@ -421,6 +421,7 @@ if p(x) = h(x), as you suggest, and h(x) = h(y), then h(x)+ip(x) = h(y)+ip(y).
 This will result in more collisions. Whereas, it is unlikely (but not
 impossible) that if h(x) != p(x), then h(x)+ip(x) != h(y) + ip(y).
 
+
 8. Path of a graph
 Let a non-oriented graph (V, E), where V = {A, B, C, D}, which has the form of
 a simple cycle: the adjacency lists are
@@ -437,6 +438,7 @@ dfs(v):
    for w in v.adjacency_list:
        if v.visted = false
             dfs(w)
+
 
 9. For B trees, the value of the M parameter is normally determined by the size
 of one page (for external data this would be determined by the size of a block
@@ -465,7 +467,185 @@ something with this element and the tree we got.
 (b) But what do we do if T_R is empty (and the smallest element does not exist
 so no)?
 
-+ Take the max of T_L, and make it the root, and leave the right child empty (?)
++ Take the max of T_L, and make it the root, and leave the right child empty.
 
 
+final 2016
+----------
+
+1. Deterministic Skip-List
+(a) In the case of the withdrawal of a deterministic Skiplist, we were often
+obliged to to use a neighboring gap. We used gap 2 if we had to go down
+the gap 1, and we used the gap i if we were to go down in the gap i + 1,
+1 <= i <= n -1. The purpose of "changing direction" was to make sure that we
+could use the gap further as neighbor.
+
+With all the good questions you asked me, I was surprised that no one
+did not ask me what happens in  n = 1: i.e., if there is no neighbor.
+
+Draw the deterministic Skiplist that corresponds to the 2-4 tree that has three nodes,
+with keys 10, 20, and 30, a key in each node, with 10 and 30 as children
+of 20. The Skiplist will have the levels h = 1, h = 2 and h = 3.
+
+|--------|
+|---20---|
+|10-20-30|
+
+
+(b) What is the difference between the Header node and the Terminal node (see E
+and T for example, page 10) at the level h = 3?
+
+gap = number of nodes in h-1, so the gap is 1
+
+(c) According to the stated rules, that it is the first thing we are supposed
+make? What is the difficulty?
+
+Since there is only one gap at level h-1, we should go to h-2 and do the algo
+as normal (meaning, bring 20 down to h-2). If we do this, then we can delete
+any of the keys (10,20, or 30) without violating any rules.
+
+(d) Is my 2-4 tree example very special, or will this case happen often?
+
+This will happen only if you insert 4 values and then delete 1.
+
+(e) What to do?
+
+
+2. Search Tree Updates: "Top-dawn" vs. "Bottom-up"
+
+We saw a bottom-up algorithm for insertion in 2-3 trees. By cons, it was said
+(although we could not see the details) that there is an algorithm "top-down"
+for updating Red-Black trees, and algorithms for Skiplists deterministic (see
+for example Question 1) obviously give "top-down "for the update of the trees
+2-4 Mention a difficulty for implantation up-to-date algorithms, and explain how
+this difficulty can be be bypassed (other than replacing the algorithm with a
+top-down algorithm).
+
+Top down -- every time we hit a full node, we split it in 1/2. That way, when
+we finally find a place to insert, we can always do this.
+
+
+3. Keys formed of characters
+
+Explain briefly how one could define a function h(x) that would serve when
+the key x is a string of characters.
+
+
+4. Search Paths (Open Addressing)
+
+Suppose you are using double hash, starting with the x_0 key. The calculation
+of h(x_0) has made that x_0 is stored in the array at the address h(x_0). Now,
+you try to insert the x_1 key and find that h(x_1) = h(x_0). You calculate
+p(x_1) (a second hash function), and follow the "collision path". Suppose the
+next two boxes you visit on the path are occupied.
+
+(a) If you calculate the value of p(x_0) and find that the box h(x_0) - p(x_0)
+is empty, there is a way to reduce the cost of subsequent searches. How?
+
+normally h(x) + i p(x)
+
+re-place x_0 at h(x_0) - p(x_0) (one operation)
+place x_1 at h(x_1)
+
+cheaper than two probes on x_1 every time.
+
+
+(b) Is there a way to generalize this idea in case the next three boxes that you
+visit on the way are busy? And four ... etc?
+
+For n boxes that are full, we can do up to n-1 probes
+
+    max =  h(x_0) - (n-1) p(h_0)
+
+and still win.
+
+
+(c) What is the tradeoff if you use this method to reduce the cost of
+further research?
+
+More time spent per insertion, so best used if we do much more searching than
+inserting.
+
+
+5. Splay Tree
+
+The ZIG-ZAG rule for Splay Tree says that if X is the right child of P, and P is
+himself the left child of G, so after the rotation, P will be the left child of
+X and G will be the right child of X. Also, the ZIG-ZIG rule says that if X is
+the left child of P, and P is  himself the left child of G, so after the
+rotation, P will be the right child of X and G will be the right child of P.
+Suppose that the keys 3, 2, 1, 4 are inserted in the order, and that we finally
+access 3. Draw the five Splay Tree corresponding to these five operations.
+
+
+6. Prim / Dijkstra
+
+(a) Explain what needs to be done to transform Prim's algorithm into an algorithm
+from Dijkstra.
+
+(b) What is the precise interpretation of distances in this case?
+
+(c) Give a summary of the advantages or disadvantages of using a heap rather
+than to use a simple column in a table, to store distances in the case of the
+Dijkstra algorithm. Express yourself informally using 0 (...) to say "is of the
+order of".
+
+
+7. Representation of graphs
+
+Explain briefly the difference between the adjacency matrix, and the adjacency
+lists, in the context of graph representation.
+
+
+8. Representation of sets
+
+In the context of the Union / Find algorithm, a representation of trees was
+used. Explain very briefly the similarities, and the differences, between this
+representation and the representation of trees "complete".
+
+
+9. In Figure 2 we see an example of deterministic SkipList. Levels in
+example are 1, 2, 3 and 4.
+
+|---------------------------|
+|---------------------------|
+|---2-----11----------71----|
+|-1-2-3-4-11-13-15-28-71-72-|
+
+
+Draw an equivalent 2-4 tree, and also an equivalent Red-Black tree. (In this
+last case, in the case of 2 keys put the smallest key in the red node. Indicate
+the red knots with a very dark circle, and the black knots with a shallow
+circle).
+
+
+10. Path of a graph
+
+Let be a non-oriented graph (V, E), where V = {A, B, C, D}, which is the
+complete graph: each node is connected to all other nodes.
+
+The adjacency lists are
+A: B, C, D;
+B: C, D, A;
+C: D, A, B;
+D: A, B, C.
+
+(a) Show how the algorithm works for a dfs depth run.
+
+(b) The dfs algorithm finds a tree underlying the graph. Draw the subtree
+tending (which may not have the classic shape of a tree in this case!)
+
+
+11. In the case of list browsing we used a mpf variable that distinguished
+the two cases: we are mounted by a string, or we arrived by a link
+ordinary? Show a very simple case that shows that it is obligatory to know, in
+the algorithm, which case it is.
+
+
+12. (a) Give the four generalized list categories that were mentioned in the
+course.
+
+(b) There is a very close relationship between one of these categories and the
+representation "puine" of an ordered tree. Explain this relationship with a
+drawing.
 
