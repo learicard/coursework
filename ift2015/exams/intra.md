@@ -19,11 +19,11 @@ Increment through a list of the values in the array/list A, extracting each valu
 
 
     K
-F < 
+F <
     E <
         D <
-            C < 
-                B < 
+            C <
+                B <
                     A
 
 
@@ -31,7 +31,7 @@ F <
 
 In the Duty 2 you have implemented three functions related to the calculations with the matrices orthogonal, whose function vectorTTimesM atrix. Briefly describe the function vectorTTimesMatrix you have written.
 
-3. 
+3.
 
 We were able to find an estimate of the expected value of I (internal path length). In fact, we have been able to demonstrate that this expected value, denoted D(N), is approximately equal to
 
@@ -67,22 +67,22 @@ B-C-A, I=3
 
     B
 A <    , I=2
-    C 
+    C
 
     A
 C <    , I=2
-    B 
+    B
 
     A
 B <    , I=2
-    C 
+    C
 
 therefore, average internal path length D is
 
 3+3+3+2+2+2 / 6 trees
 15/6
 
-Since 15/6 ~ 16/6, we show that 
+Since 15/6 ~ 16/6, we show that
 
 N+1(2 x sum(1/i))
 
@@ -141,7 +141,7 @@ if left child -- all get +1
 if right child -- all get +1 except it's parent
 
 
-6. 
+6.
 
 (a) Express the relation between the generalized lists, and the "puisne" representation (first sibling after me + my first child) for the trees.
 
@@ -165,7 +165,15 @@ c log(n) > c loglog(n), since log(n) > loglog(n) for all n, and omega is a lower
 
 8. Suppose in an AVL tree that I found, after inserting a key, a lack of sway of the form d, d+2 at node P. Suppose also that the left child of P is TI, the right child of P is S, the children of S are T2 and T3, and I have inserted to the right of S. Show how to make the necessary rotation, and show that the order did not not changed after. (Note: it is not necessary to talk about the heights of subtrees.)
 
-< to do > 
+       d   d+2
+         P               S
+        / \             / \
+      T1   S      =>   P   T3
+          / \         / \    \
+        T2   T3     T1   T2   X
+              \
+               X
+
 
 9. For TAD Priority Queues, with remove, insert and initialize operations, give the costs using the notation 0(...), for the following two choices of structure of data: the heap, and a list sorted in a table.
 
@@ -195,8 +203,8 @@ Preorder (see recursive answer to ete 2014).
 
 (c) In the case of keys that may be identical (therefore not necessarily distinct), we can insist that all the keys in the left subtree of a node are strictly inferior to the key in the node. That is to say that the keys equals are always put in the right subtree. Show the result of using the algoritlune of "creation of tree" in the case of keys F, E, D, F, E, A, E. (The keys are ordered by the usual lexicographic order, and they are treated in the order indicated.) Explain also the advantage of insisting that all the keys in the left subtree of a node are strictly inferior to the key in the node.
 
-    F 
-F <     E 
+    F
+F <     E
     E <
         D <
             A
@@ -221,14 +229,14 @@ Types of generalized lists:
 + REENTRANT -- can have repeat entries
 + CYCLIC -- can form cycles
 
-GRAPH superset CYCLIC superset REENTRANT superset PURE superset LINEAR. 
+GRAPH superset CYCLIC superset REENTRANT superset PURE superset LINEAR.
 
 
 5. Heaps
 
 (a) Give a simple proof that the creation of a heap is O(NlogN).
 
-Insertion costs O(log n). We insert N times for the N element list to have sorted in a heap, which results in a total runtime of O(nlogn).
+Insertion costs O(log n). We insert N times for the N element list to have sorted in a heap, which results in a total runtime of O(N logN).
 
 (b) In fact, there is a better algorithm.
 i. What is the name of this algorithm?
@@ -260,21 +268,26 @@ Since there are O(logn) layers of the tree, this operation takes O(logn). It cou
 
 7. Suppose we have a reference to a Node node AVL, where
 
-Left P. = T1
-P. Right = S
+p.left = T1
+p.right = S
 
 and S (also of type AVL node) has
 
-S. Left = T2
-S.droit = T3.
+s.left = T2
+s.right = T3
 
 Suppose also that we have inserted a new node in T3 (this is the example of the course).
 
 If I now have to do a simple rotation to bring S to the root, I start by taking note of P.
 
-Temp <- P.droit
+temp <- p.right
 
-and I make two other assignments (which ones?) for (a) (b) before returning Temp as root. Give the drawings (before and after the rotation), and give the assignments (a} and (b). Hint: Both assignments involve Temp.xxx.
+and I make two other assignments (which ones?) for (a) (b) before returning Temp as root.
+Give the drawings (before and after the rotation), and give the assignments (a} and (b).
+Hint: Both assignments involve Temp.xxx.
+
+p.right = temp.left
+temp.left = p
 
 
 8. Weiss gives a proof similar to that which we gave in the case of the foundry of a medium binary search tree. This also serves for the analysis of quicksort. In his notation we have
@@ -294,7 +307,7 @@ Note that is Tbest <= Tworst. Explain in both cases:
 
 (a) Is it possible that Tbest is O(N^3), at the same time as Tworst is O(NlogN)?
 
-No, best=N^3 > worst=NlogN, but tbest <= tworst, therefore this is impossible. 
+No, best=N^3 > worst=NlogN, but tbest <= tworst, therefore this is impossible.
 
 (b) Is it possible that Tbest is omega(N^2), at the same time as Tworst is O(NlogN)?
 
