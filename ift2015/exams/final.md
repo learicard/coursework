@@ -92,7 +92,7 @@ SplayTree. Indicate substeps as needed.
 
 (b) Access the key 2.
 
-zig
+zig (right rotate parent)
       5
      /
     3
@@ -101,7 +101,7 @@ zig
  /
 1
 
-zig
+zig (right rotate key)
     5
    /
   2
@@ -530,6 +530,10 @@ we finally find a place to insert, we can always do this.
 Explain briefly how one could define a function h(x) that would serve when
 the key x is a string of characters.
 
++ Each character is hashed independently,
++ Use Horner's method to calculate the hash efficiently:
+
+    for (i = 0; i < key.length(); i++)
 
 4. Search Paths (Open Addressing)
 

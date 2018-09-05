@@ -328,4 +328,68 @@ Since c * logN is always > c * 1/N logN, we can say that the function bounded fr
 2) probing -- comes in many forms, linear, quadratic, and double hashing. In all cases, you apply the original hash. If there is a collision, you apply a second 'increment' to the original hash location and try again. In linear probing, you add one to the index. In quadratic probing, you multiply the index by 2. In double hashing, you obtain the increment from a second fxn hash of the data. With each attempt you increment by this number. In all probing cases, you pay a penalty when many values cluster together, requiring many attempts before a successful insert or retrieval, otherwise you maintain O(1) function.
 
 
+intra 2016
+----------
+
+4. we saw the case of rebalancing when the node P had factors d, d + 2,
+and a left subtree Tl of height d. The child on the right of Pa
+been noted S, and we looked at the case where the insertion was to the left of
+S: indeed, for d 2 ::! the left child of S was rated R, R had two children T2
+and T3, and the new node has been inserted as child of T2 or T3. The right
+subtree of S is T4 (of height d).
+
+I noted later in the course that in the case d = 0 the subtree T^ becomes
+a single node, R and his children are replaced by the inserted node, and T& also
+becomes a single node. We now have that T2 = T3 = A, and the R node
+is absent. Both rotations, however, work as usual.
+
++ Draw the tree in the even more extreme case of d = -1.
+    -- in this case T^ and T& are empty.
+
++ We always have in this case that T2 = T3 = A, and the node R is absent. The
+  subtrees T^ and T& are what now?
++ Show the two rotations needed to rebalance the tree.
+
+(b) Noting that in both cases, the insertion to the left of Set the insertion
+on the right deS, the height of the tree does not change after the rotation (s),
+someone arrives to the conclusion that we no longer need external memory
+(disks, by example), because AVL trees in internal memory never change
+height, regardless of the number of keys we insert into the tree. And
+however, it seems to me that he should have a catch somewhere in this idea!
+How can the height of the tree become larger?
+
+6. The heaps
+Store the keys of a heap in a linear structure, with the first key
+in box 1, as we did in the course.
+(a) Draw the "Complete" tree which has the following 12 keys:
+    2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37.
+
+                      2
+                     / \
+                    3   5
+                  / |   | \
+                 7  11 13  17
+                /|  /\  ... lah blah
+
+
+(b) Draw the "Complete" tree with 11 keys after the delete_min operation.
+    Explain briefly the exchanges that have been made to get there.
+
+                      3
+                     /
+                    7
+                   ...
+                 /
+               37 (at bottom because its the largest one)
+
+10.
+Discrete Addressing (Hashing)
+
+(a) In the External Lists method, we choose in practice a value
+of NI (number of boxes) according to N, the expected value of the number of keys.
+The purpose of this choice is to keep how much (what function of N and M)
+small?
+
+(b) What would be the point of replacing linear lists in the List method
+External, by an AVL tree?
 
