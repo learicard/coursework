@@ -1,0 +1,204 @@
+%&pdflatex
+%% filename: amsart-template.tex, version: 2.1
+\documentclass{amsart}
+\usepackage{hyperref}
+\usepackage{inputenc}
+\usepackage{graphicx}
+\usepackage{bbm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{xca}[theorem]{Exercise}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\setlength{\parindent}{0pt} % turn off auto-indent
+
+\graphicspath{ {./} }
+
+\begin{document}
+
+\title{Assignment 1: [IFT6390]}
+
+\author{L\'ea Ricard \& Joseph D. Viviano}
+\address{Universit\'e de Montr\'eal}
+\curraddr{}
+\email{joseph@viviano.ca}
+\thanks{}
+\date{Sept 2018}
+
+\maketitle
+
+\section{Probabilities}
+
+$P(D)$ = the probability of having disease. \\
+$P(T)$ = the probability of having a positive test result. \\
+
+\begin{itemize}
+    \item 1.5\% of women in their 40s have breast cancer, therefore $P(D) = 0.015$.
+    \item 87\% true positive rate, therefore $P(T|D) = 0.87$.
+    \item 9.6\% false positive rate, therefore $P(T|\neg D) = 0.096$.
+\end{itemize}
+
+We want to know: \\
+
+\begin{equation}
+P(D|T) = \frac{P(T|D) P(D)}{P(T)}
+\end{equation}
+
+Which means we need to calculate $P(T)$ which is $P(T|D) + P(T |\neg D) = 0.966$ \\
+
+\begin{equation}
+P(D|T) = \frac{0.87 \times 0.015}{0.966} \approx 0.0135
+\end{equation}
+
+\section{Curse of Dimensionality}
+
+(A) \textit{Consider a hypercube in dimension $d$ with side length $c$. What is the volume $V$?} \\
+
+In the 2-dimensional case, $area = c^2$. In the 3 dimensional case, $V = c^3$. In the n-dimensional case, $V = c^d$. \\
+
+(B) \textit{$X$ is a random vector of dimension d ($x \in \R d$) distributed 
+uniformly within the hypercube (the probability density  $p(x) = 0$ for all $x$ 
+outside the cube). What is the probability density function $p(x)$ for $x$ inside 
+the cube? Indicate which property(ies) of probability densities functions allow 
+you to calculate this result.}\\
+
+For all probability distributions: \\
+
+\begin{equation}
+    \int_{-\inf}^{\inf}p(x) = 1
+\end{equation}
+
+We know $p(x) = 0$ for all points outside of the hypercube. Therefore,
+$p(x) = 1$ for $x$ inside the cube (since $1-0 = 1$). \\
+
+(C) \textit{Consider the outer shell (border) of the hypercube of width 
+3\% of c (covering the part of the hypercube extending from the faces of 
+the cube and 0.03c inwards). For example, if c = 100cm, the border will
+be 3cm (left, right, top, etc ...) and will delimit this way a second
+(inner) hypercube of side 100 − 3 − 3 = 94cm. If we generate a point $x$
+according to the previously defined probability distribution (by 
+sampling), what is the probability that it falls in the border area? What
+is the probability that it falls in the smaller hypercube?}
+
+Let $b$ be the amount to remove from the border on one side (i.e., left) 
+of the outer hypercube.
+
+$p(x_{large}) = 1$. Therefore in the general case the probability we are in the smaller hypercube is:\\
+
+\begin{equation}
+    p(x_{small}) = (c-2b)^d / c^d
+\end{equation}
+
+\begin{equation}
+    p(x_{border}) = 1 - p(x_{small})
+\end{equation}
+
+Therefore for the above example: \\
+
+\begin{equation}
+    p(x_{small}) = (100 - 2 \times 3)^d / 100^d = 94^d / 100^d \\
+\end{equation}
+
+And as before: \\
+
+\begin{equation}
+    p(x_{border}) = 1 - p(x_{small})
+\end{equation} \\
+
+And the probability we are in the border is: \\
+
+(D) \textit{Calculate the above for $d = {1, 2, 3, 5, 10, 100, 1000}$}.
+
+\begin{equation}
+    1- 94^1 / 100^1 = 0.06
+\end{equation}
+
+\begin{equation}
+    94^2 / 100^2 = 0.1163
+\end{equation}
+
+\begin{equation}
+    94^3 / 100^3 = 0.1694
+\end{equation}
+
+\begin{equation}
+    94^5 / 100^5 = 0.2661
+\end{equation}
+
+\begin{equation}
+    94^{10} / 100^{10} = 0.4614
+\end{equation}
+
+\begin{equation}
+    94^{100} / 100^{100} = 0.9980
+\end{equation}
+
+\begin{equation}
+    94^{1000} / 100^{1000} \approx 1 (i.e., tres grand).
+\end{equation} \\
+
+(E) When the dimension grows, the probability that $x$ falls into the narrow border at the edge of the hypercube becomes more likely, which is contrary of our intuitions
+at lower dimensions. 
+
+\section{Parametric Gaussian vs Parzen Window Density Estimation}
+
+\subsection{Isotropic Gaussian Distribution} \\
+
+(A) The named parameters are $\mu$, a $d$-long vector of means, and $\Sigma$, a $d \times d$ covariance matrix, where $n$ is the number of data points. \\
+
+(B) 
+
+\begin{equation}
+    \mu = \frac{1}{n}\sum_{i=1}^{n}x_{i}.
+\end{equation}
+
+\begin{equation}
+    \Sigma = {1 \over {n}}\sum_{i=1}^n (\mathbf{x}_i-\mu) (\mathbf{x}_i-\mu)^\mathrm{T}
+\end{equation} \\
+
+(C) For the $\mathcal{\mu}$ parameter, the algorithm complexity is in $\mathcal{O}(n)$, since it is summing over the vectors $\mathcal (x_{i})$.
+
+For the  $\Sigma$ parameter, since the Gaussian density function is isotropic, the algorithm complexity is also in $\mathcal{O}(n)$. $\mu$ can be calculated by $\Sigma = \sigma I^2$. \\
+
+(D)
+
+\begin{equation}
+    p(x) = \frac{1}{(2\pi)^{frac{d}{2} \sqrt{|\Sigma|}}} {\rm e}^{-\frac{1}{2}(x-\mu)^T \Sigma^{-1} (x-\mu)}   
+\end{equation}
+ 
+(E) The cost of this operation is $\mathcal{O}(1)$, since this is a straight calculation. \\
+
+\subsection{Parzen windows with Isotropic Gaussian Kernels} \\
+
+(A) The only thing learned during training of Parzen Window Density Estimation using Gaussian kernels is $\sigma$, since the peak of each Gaussian is each data point. Therefore, if $\sigma$ is fixed by the user, nothing is learned during training (the Gaussians are simply centered on each training data point). \\
+
+(B) \\
+
+\begin{equation}
+    p(x) = \frac{1}{n}\sum_{i=1}^{n}\mathcal{N}_{x, \sigma}(x)
+\end{equation}
+
+Expanded becomes: \\
+
+\begin{equation}
+    p(x) = \frac{1}{n}\sum_{i=1}^{n} \frac{1}{(2\pi)^{\frac{d}{2}} \sigma^d} {\rm e}^{-\frac{1}{2}\frac{d(x_{test}, x_{train})^2}{\sigma^2} }
+\end{equation}\\
+
+(C) $\mathcal{O}(n)$, since we have to calculate the distance between $x_{test}$ and all of the $n$ data points $x_{train}$. \\
+
+\subsection{Capacity/Expressivitiy} \\
+
+(A) The Parzen Gaussian is more expressive, because it can store information for every data point. The capacity of the algorithm grows as we give it more data points, this isn't true for the Gaussian distribution, which averages over all data points, so it has a fixed capacity for a given dimensionality, no matter how many training data the algorithm is shown. \\
+
+(B) Parzen windows with Isotropic Gaussian Kernels, in the case that we used a large number of training examples with a small $\sigma$ would result in extreme memorization of the noise in the training data (i.e., overfitting). \\
+
+(C) Because in parametric Gaussian density estimation, $\sigma$ is learned from the data, while it is fixed for all data points when using Parzen windows. \\ 
+
+\section{Softmax Activation Function}
+
+\end{document}

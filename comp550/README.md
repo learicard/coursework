@@ -1,4 +1,4 @@
-- [ ] Introduction to Natural Language Processing J&M Ch 1 (both 1st ed and 2nd ed)
+- [x] Introduction to Natural Language Processing J&M Ch 1 (both 1st ed and 2nd ed)
 - [ ] Morphology, FSAs and FSTs J&M Ch 2.2, Ch 3 (both 1st ed and 2nd ed)
 - [ ] Article prediction, Python intro NLTK
 - [ ] Language models and N-grams
