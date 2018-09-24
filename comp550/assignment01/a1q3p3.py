@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import os, sys
 import numpy as np
 
@@ -10,7 +9,7 @@ from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import KFold, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import log_loss, accuracy_score
+from sklearn.metrics import log_loss, accuracy_score, confusion_matrix
 
 from scipy import stats
 
@@ -25,7 +24,7 @@ FOLDS = 10
 INNER = 3
 N_CV = 20
 
-MIN_DF = stats.uniform(10e-10, 10e-4)
+MIN_DF = stats.randint(1, 11)
 NGRAMS = ((1, 1), (1, 2), (2, 2))
 STOPWS = (set(stopwords.words('english')), None)
 
@@ -42,6 +41,7 @@ SETTINGS_SVC = {
     'pre__stop_words': STOPWS,
     'clf__C': stats.uniform(10e-3, 100),
 }
+
 SETTINGS_LR = {
     'pre__min_df': MIN_DF,
     'pre__ngram_range': NGRAMS,
@@ -117,41 +117,52 @@ def classify(X, y, clf_type='nb'):
     else:
         raise Exception('{} is an invalid clf: {nb, svm, lr}'.format(clf_type))
 
+    # pipeline runs preprocessing and model during every CV loop
     pipe = Pipeline([
         ('pre', CountVectorizer()),
         ('clf', clf),
     ])
-
     model = RandomizedSearchCV(pipe, params, n_jobs=-1, n_iter=N_CV, cv=INNER)
 
-    test_results = {'loss': [], 'accuracy': []}
-    cv_results = {}
+    results = {
+        'test':  {'loss': [], 'accuracy': [], 'confusion': []},
+        'train': {'loss': [], 'accuracy': [], 'confusion': []},
+        'cv': {}
+    }
 
     kf = KFold(n_splits=FOLDS, shuffle=True)
     X = np.array(X) # convert so we can use indexing
 
-    i = 0
-    for train_idx, test_idx in kf.split(y):
-        i += 1
-        print("[{}/{}] Fold for model {}".format(i, FOLDS, clf_type))
+    for i, (train_idx, test_idx) in enumerate(kf.split(y)):
+        print("[{}] {}/{}".format(clf_type, i+1, FOLDS))
+
+        # split training and test sets
         X_train = X[train_idx]
         X_test = X[test_idx]
         y_train = y[train_idx]
         y_test = y[test_idx]
 
+        # fit model
         model.fit(X_train, y_train)
+
+        # save the best parameters from the inner-fold cross validation
         best_params = model.best_estimator_.get_params()
-
         for p in sorted(params.keys()):
-            cv_results[p] = best_params[p]
-            #print("\t%s: %r" % (p, best_params[p]))
+            results['cv'][p] = best_params[p]
 
-        y_pred = model.predict(X_test)
+        # make predictions on train and test set
+        y_test_pred = model.predict(X_test)
+        y_train_pred = model.predict(X_train)
 
-        test_results['loss'].append(log_loss(y_test, y_pred))
-        test_results['accuracy'].append(accuracy_score(y_test, y_pred))
+        # store results
+        results['test']['loss'].append(log_loss(y_test, y_test_pred))
+        results['test']['accuracy'].append(accuracy_score(y_test, y_test_pred))
+        results['test']['confusion'].append(confusion_matrix(y_test, y_test_pred))
+        results['train']['loss'].append(log_loss(y_train, y_train_pred))
+        results['train']['accuracy'].append(accuracy_score(y_train, y_train_pred))
+        results['train']['confusion'].append(confusion_matrix(y_train, y_train_pred))
 
-    return(test_results, cv_results)
+    return(results)
 
 
 def main():
@@ -161,9 +172,9 @@ def main():
     # calls to preprocess define ngrams, stop word removal, and threshold
     #X = preprocess(X, ngmin=1, ngmax=2, rmstop=False, threshold=1)
 
-    nb_test_results, nb_cv_results = classify(X, y, clf_type='nb')
-    sv_test_results, sv_cv_results = classify(X, y, clf_type='svm')
-    lr_test_results, lr_cv_results = classify(X, y, clf_type='lr')
+    nb_results = classify(X, y, clf_type='nb')
+    sv_results = classify(X, y, clf_type='svm')
+    lr_results = classify(X, y, clf_type='lr')
 
     import IPython; IPython.embed()
 
