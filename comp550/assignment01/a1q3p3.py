@@ -23,7 +23,7 @@ POSFILE = 'rt-polarity.pos'
 
 FOLDS = 10
 INNER = 3
-N_CV = 100
+N_CV = 20
 
 MIN_DF = stats.uniform(10e-10, 10e-4)
 NGRAMS = ((1, 1), (1, 2), (2, 2))
@@ -163,7 +163,7 @@ def main():
     #X = preprocess(X, ngmin=1, ngmax=2, rmstop=False, threshold=1)
 
     nb_test_results, nb_cv_results = classify(X, y, clf_type='nb')
-    sv_test_results, sv_cv_results = classify(X, y, clf_type='svc')
+    sv_test_results, sv_cv_results = classify(X, y, clf_type='svm')
     lr_test_results, lr_cv_results = classify(X, y, clf_type='lr')
 
     import IPython; IPython.embed()
