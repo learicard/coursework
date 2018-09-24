@@ -41,7 +41,6 @@ SETTINGS_SVC = {
     'pre__ngram_range': NGRAMS,
     'pre__stop_words': STOPWS,
     'clf__C': stats.uniform(10e-3, 100),
-    'clf__kernel': 'linear'
 }
 SETTINGS_LR = {
     'pre__min_df': MIN_DF,
