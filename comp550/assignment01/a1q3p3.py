@@ -1,21 +1,22 @@
 #!/usr/bin/env python
 import os, sys
 import numpy as np
+from scipy import stats
+import pandas as pd
 
 import sklearn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import KFold, RandomizedSearchCV
+from sklearn.model_selection import StratifiedKFold, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import log_loss, accuracy_score, confusion_matrix
 
-from scipy import stats
-
 import nltk
-#from nltk import word_tokenize
 from nltk.corpus import stopwords
+
+import seaborn as sns
 
 NEGFILE = 'rt-polarity.neg'
 POSFILE = 'rt-polarity.pos'
@@ -49,6 +50,7 @@ SETTINGS_LR = {
     'clf__C': stats.uniform(10e-3, 100),
 }
 
+
 def get_data():
     """
     Returns a preprocessed X with the entire corpus and a y with
@@ -67,26 +69,10 @@ def get_data():
     y = np.zeros(n)
     y[n_pos:] = 1
 
-    neg_data.extend(pos_data)
-
     return(neg_data, y)
 
 
-#def preprocess(X, ngmin=1, ngmax=2, rmstop=False, threshold=1):
-#    if rmstop:
-#        to_rm = stopwords.words('english')
-#    else:
-#        to_rm = None
-#
-#    vectorizer = CountVectorizer(
-#        ngram_range=(ngmin, ngmax), stop_words=to_rm, min_df=threshold)
-#
-#    X = vectorizer.fit_transform(X)
-#
-#    return(X)
-
-
-def classify(X, y, clf_type='nb'):
+def classify(X, y, clf_type='nbc'):
     """
     Preprocess the input documents to extract feature vector representations of
     them. Your features should be N-gram counts, for N<=2.
@@ -105,24 +91,27 @@ def classify(X, y, clf_type='nb'):
     held-out data.
     """
 
-    if clf_type == 'nb':
+    if clf_type == 'nbc':
         clf = BernoulliNB()
         params = SETTINGS_NB
-    elif clf_type == 'svm':
+    elif clf_type == 'svc':
         clf = LinearSVC()
         params = SETTINGS_SVC
-    elif clf_type == 'lr':
+    elif clf_type == 'lrc':
         clf = LogisticRegression()
         params = SETTINGS_LR
     else:
-        raise Exception('{} is an invalid clf: {nb, svm, lr}'.format(clf_type))
+        raise Exception('invalid clf {}: {nbc, svc, lrc}'.format(clf_type))
 
     # pipeline runs preprocessing and model during every CV loop
     pipe = Pipeline([
         ('pre', CountVectorizer()),
         ('clf', clf),
     ])
-    model = RandomizedSearchCV(pipe, params, n_jobs=-1, n_iter=N_CV, cv=INNER)
+
+    model = RandomizedSearchCV(
+        pipe, params, n_jobs=-1, n_iter=N_CV, cv=INNER, scoring='f1_macro'
+    )
 
     results = {
         'test':  {'loss': [], 'accuracy': [], 'confusion': []},
@@ -130,7 +119,7 @@ def classify(X, y, clf_type='nb'):
         'cv': {}
     }
 
-    kf = KFold(n_splits=FOLDS, shuffle=True)
+    kf = StratifiedKFold(n_splits=FOLDS, shuffle=True)
     X = np.array(X) # convert so we can use indexing
 
     for i, (train_idx, test_idx) in enumerate(kf.split(y)):
@@ -169,12 +158,36 @@ def main():
 
     X, y = get_data()
 
-    # calls to preprocess define ngrams, stop word removal, and threshold
-    #X = preprocess(X, ngmin=1, ngmax=2, rmstop=False, threshold=1)
+    nb_results = classify(X, y, clf_type='nbc')
+    sv_results = classify(X, y, clf_type='svc')
+    lr_results = classify(X, y, clf_type='lrc')
 
-    nb_results = classify(X, y, clf_type='nb')
-    sv_results = classify(X, y, clf_type='svm')
-    lr_results = classify(X, y, clf_type='lr')
+    db = pd.DataFrame()
+    accs = np.concatenate([
+        nb_results['train']['accuracy'], nb_results['test']['accuracy'],
+        sv_results['train']['accuracy'], sv_results['test']['accuracy'],
+        lr_results['train']['accuracy'], lr_results['test']['accuracy']]
+    )
+
+    labels = ['train'] * FOLDS + ['test'] * FOLDS
+    labels = np.array(labels * 3)
+
+    models = np.array(['nieve bayes'] * FOLDS * 2 +
+             ['linear SVM'] * FOLDS * 2 +
+             ['logistic regression'] * FOLDS * 2)
+
+    db['accuracy'] = accs
+    db['phase'] = labels
+    db['model'] = models
+
+    sns.boxplot(
+        x="model", y="accuracy", hue="phase", palette=["grey", "red"], data=db
+    )
+    sns.despine(offset=10, trim=True)
+    plt.title('Average model performance across {} folds for the 3 models'.format(
+        FOLDS))
+    plt.tight_layout()
+    plt.savefig('accs.jpg')
 
     import IPython; IPython.embed()
 
