@@ -16,6 +16,7 @@ from sklearn.metrics import log_loss, accuracy_score, confusion_matrix
 import nltk
 from nltk.corpus import stopwords
 
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 NEGFILE = 'rt-polarity.neg'
@@ -23,7 +24,7 @@ POSFILE = 'rt-polarity.pos'
 
 FOLDS = 10
 INNER = 3
-N_CV = 20
+N_CV = 100
 
 MIN_DF = stats.randint(1, 11)
 NGRAMS = ((1, 1), (1, 2), (2, 2))
@@ -40,14 +41,14 @@ SETTINGS_SVC = {
     'pre__min_df': MIN_DF,
     'pre__ngram_range': NGRAMS,
     'pre__stop_words': STOPWS,
-    'clf__C': stats.uniform(10e-3, 100),
+    'clf__C': stats.uniform(10e-5, 100),
 }
 
 SETTINGS_LR = {
     'pre__min_df': MIN_DF,
     'pre__ngram_range': NGRAMS,
     'pre__stop_words': STOPWS,
-    'clf__C': stats.uniform(10e-3, 100),
+    'clf__C': stats.uniform(10e-5, 100),
 }
 
 
@@ -69,7 +70,9 @@ def get_data():
     y = np.zeros(n)
     y[n_pos:] = 1
 
-    return(neg_data, y)
+    X = np.concatenate([np.array(neg_data), np.array(pos_data)])
+
+    return(X, y)
 
 
 def classify(X, y, clf_type='nbc'):
@@ -114,15 +117,14 @@ def classify(X, y, clf_type='nbc'):
     )
 
     results = {
-        'test':  {'loss': [], 'accuracy': [], 'confusion': []},
+        'test':  {'loss': [], 'accuracy': [], 'confusion': [], 'errors': []},
         'train': {'loss': [], 'accuracy': [], 'confusion': []},
         'cv': {}
     }
 
     kf = StratifiedKFold(n_splits=FOLDS, shuffle=True)
-    X = np.array(X) # convert so we can use indexing
 
-    for i, (train_idx, test_idx) in enumerate(kf.split(y)):
+    for i, (train_idx, test_idx) in enumerate(kf.split(X, y)):
         print("[{}] {}/{}".format(clf_type, i+1, FOLDS))
 
         # split training and test sets
@@ -142,6 +144,12 @@ def classify(X, y, clf_type='nbc'):
         # make predictions on train and test set
         y_test_pred = model.predict(X_test)
         y_train_pred = model.predict(X_train)
+
+        # record some misclassified sentences
+        idx_errors = np.where(y_test_pred != y_test)[0]
+        np.random.shuffle(idx_errors)
+        errors = X_test[idx_errors[:5]]
+        results['test']['errors'].extend(errors)
 
         # store results
         results['test']['loss'].append(log_loss(y_test, y_test_pred))
@@ -188,6 +196,10 @@ def main():
         FOLDS))
     plt.tight_layout()
     plt.savefig('accs.jpg')
+
+    c_matrix = np.stack(nb_results['test']['confusion'], axis=0)
+    c_matrix_mean = np.mean(c_matrix, axis=0)
+    c_matrix_std = np.std(c_matrix, axis=0)
 
     import IPython; IPython.embed()
 

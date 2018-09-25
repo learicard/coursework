@@ -90,5 +90,91 @@
 \end{table}
 %infinitive,1-sg-reg,2-sg-reg,3-sg-reg,1-pl-reg,2-pl-reg,3-pl-reg
 
+\section{Sentiment Analysis}
+
+To train our sentiment analysis classifier, I built a pipeline using Scikit
+Learn to compare various preprocessing strategies and the Nieve Bayes (NB),
+Support Vector Machine with a Linear kernel (SVC), and Logistic Regression
+Classifiers (LR). \\
+
+To preprocess the corpus, ngram counts were collected for each sentence and
+encoded in a one-hot manner. The data were then split into training (90\%) and
+test (10\%) sets using 10-fold cross validation. All results presented are the
+mean $\pm$ standard deviation across all 10 folds. This procedure was performed
+independently for the NB, SVC, and LR classifiers. \\
+
+To select the best performing hyperparameters, we used Randomized Cross
+Validation to search over the possible settings. 100 randomized settings were
+tried per outer fold. To evaluate these 100 randomized settings, 3 inner-fold
+cross validation was performed on the training set only. The best set of the 100
+best settings were then applied to the test set, ensuring no leakage between
+the training and test set. The pipeline was encouraged to maximize the F1
+score (macro) during hyperparameter tuning. \\
+
+Preprocessing settings explored included removing infrequently occouring words
+(less than 1-10 times in the corpus), computing unigram, unigram+bigram, and
+bigram only models, and whether it is best to remove stopwords or not. \\
+
+For the models themselves, I sampled alpha values uniformly between $0.5$ and $2$
+for the NB classifier, and I sampled C values between $1\times10^{-5}$ and $100$
+uniformly for the SVM and LR models. \\
+
+Accuracy scores on the test sets, averages across all 10 folds, for all
+experiments are shown below. All models performed well above chance (50\% as
+there were an equal number of positive and negative examples in the dataset),
+and the NB model performed best. All models show some evidence of overfitting
+(nearly perfect performance on the training set with a large generalization gap)
+and would benefit from stronger regularization. \\
+
+\begin{figure}
+  \caption{All classification results.}
+  \centering
+    \includegraphics[width=0.75\textwidth]{accs}
+\end{figure}
+
+
+\subsection{Error Analysis}
+
+The confusion matrix at the end of this section details the performance of the
+best performing model (the Nieve Bayes classifier): \\
+
+To get a better sense of the kinds of errors the algorithm made, we stored a small
+number of the errors made across the 10 folds. What follows are some examples: \\
+
+\begin{itemize}
+    \item{director hoffman , his writer and kline's agent should serve detention}
+    \item{allen se atreve a atacar , a atacarse y nos ofrece gags que van de la sonrisa a la risa de larga duraciÃ³n}
+    \item{i have two words to say about reign of fire . great dragons ! }
+    \item{the cast is uniformly excellent . . . but the film itself is merely mildly charming .}
+    \item{mildly entertaining .}
+    \item{thekids will probably stay amused at the kaleidoscope of big , colorful characters . mom and dad can catch some quality naptime along the way .}
+\end{itemize}
+
+We make a few observations. First, the model isn't picking up on what I'll call
+`veiled criticisms'. For example, saying that the filmmakers should
+\textit{serve detention} or that the film is \textit{mildly entertaining} is
+an indirect criticism in the first case, and actually a positively-valenced
+sentiment in the second case. A better algorithm would need a fuller understanding
+of language beyong bigrams to understand that `mildly entertaining' might actually
+not be an endorsement in the context of a film review. Second, at least one review
+in the corpus is not in English. Any other foreign language reviews we would expect
+to be predicted at chance level (50\%). Third, some reviews use a lot of positive
+words in isolation as a form of either irony or politeness (e.g.,
+\textit{mom and dad [can nap]}, \textit{great dragons}, \textit{mildly charming}).
+These sentiments imply a negative review to the reader (`are the dragons the
+only good part of this film?'), but a bigram model might read `great' or `great
+dragons' and reasonably score this as a positive review. \\
+
+I suggest: better data cleaning to remove foreign language reviews, and a more
+sophisticated model that understand language in context beyond what a bigram
+model can encode.
+
+\begin{table}[]
+\begin{tabular}{lll}
+                  & \textbf{Positive} & \textbf{Negative} \\
+\textbf{Positive} & 427.0\pm10.35     & 106.1\pm10.28   \\
+\textbf{Negative} & 122.5\pm8.88      & 410.6\pm8.85
+\end{tabular}
+\end{table}
 
 \end{document}
