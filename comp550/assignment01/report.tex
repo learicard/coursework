@@ -41,9 +41,19 @@
 
 \url{https://books.google.ca/books?id=eJUvDGXRW7AC&pg=PA92#v=onepage&q&f=false} \\
 
-"Mr Buyer, I understand that you do not have the money to write me a check for the retainer tonight. When would it be all \textbf{right} for you to \textbf{write} me a check for the retainer?" \\
+"Mr Buyer, I understand that you do not have the money to write me a check for
+the retainer tonight. When would it be all \textbf{right} for you to
+\textbf{write} me a check for the retainer?" \\
 
-\textit{Right} and \textit{write} sound identical in English, but have very different meanings. Indeed, \textit{right} after the word "all" means something potentially different than \textit{right} on it's own. Here, \textit{right} means "correct", and adjective, whereas \textit{write} mean "to use a hand-held utensil for the purposes of placing words on a medium such as paper", a verb. For a reader to disambiguate these words, one could look to the word before right, i.e., "all right", to see that right in this case means correct, where as one could look at the words directly after "write", i.e., "write me a check", to see that this word refers to the act of visual letter production. \\
+\textit{Right} and \textit{write} sound identical in English, but have very
+different meanings. Indeed, \textit{right} after the word "all" means something
+potentially different than \textit{right} on it's own. Here, \textit{right}
+means "correct", and adjective, whereas \textit{write} mean "to use a hand-held
+utensil  for the purposes of placing words on a medium such as paper", a verb.
+For a  reader to disambiguate these words, one could look to the word before
+right,  i.e., "all right", to see that right in this case means correct, where
+as one  could look at the words directly after "write", i.e., "write me a
+check", to see  that this word refers to the act of visual letter production. \\
 
 \subsection{Morphology}
 
@@ -80,9 +90,9 @@
 
 
 \section{FST for Spanish Verbal Conjugation}
-    \begin{table}[ht]
-    \centering
-    \resizebox{\textwidth}{!}{\begin{tabular}{l l|l|l|l|l|l}%
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{\begin{tabular}{l l|l|l|l|l|l}%
     \bfseries Infinitive & \bfseries 1st sg & \bfseries 2nd sg & \bfseries 3rd sg & \bfseries 1st pl & \bfseries 2nd pl & \bfseries 3rd pl % specify table head
     \csvreader[head to column names]{lex_table.csv}{}% use head of csv as column names
     {\\\hline\csvcoli&\csvcolii&\csvcoliii&\csvcoliv&\csvcolv&\csvcolvi&\csvcolvii}% specify your coloumns here
@@ -90,10 +100,14 @@
 \end{table}
 %infinitive,1-sg-reg,2-sg-reg,3-sg-reg,1-pl-reg,2-pl-reg,3-pl-reg
 
+Please find the FST diagrams attached to the end of this document. \\
+
 \section{Sentiment Analysis}
 
+\subsection{Experiment Description}
+
 To train our sentiment analysis classifier, I built a pipeline using Scikit
-Learn to compare various preprocessing strategies and the Nieve Bayes (NB),
+Learn to compare various preprocessing strategies and the Naive Bayes (NB),
 Support Vector Machine with a Linear kernel (SVC), and Logistic Regression
 Classifiers (LR). \\
 
@@ -111,7 +125,7 @@ best settings were then applied to the test set, ensuring no leakage between
 the training and test set. The pipeline was encouraged to maximize the F1
 score (macro) during hyperparameter tuning. \\
 
-Preprocessing settings explored included removing infrequently occouring words
+Preprocessing settings explored included removing infrequently occurring words
 (less than 1-10 times in the corpus), computing unigram, unigram+bigram, and
 bigram only models, and whether it is best to remove stopwords or not. \\
 
@@ -132,18 +146,23 @@ and would benefit from stronger regularization. \\
     \includegraphics[width=0.75\textwidth]{accs}
 \end{figure}
 
+Inner-fold cross-validation chose the following settings most often for the NB
+classifier:  alpha=1.18, do not remove stop words, use a unigram+bigram model,
+and to not remove infrequently occurring words. These latter three preprocessing
+hyperparameters were consistent across the three classification models used,
+even though these optimizations were done completely independently.
 
 \subsection{Error Analysis}
 
 The confusion matrix at the end of this section details the performance of the
-best performing model (the Nieve Bayes classifier): \\
+best performing model (the Naive Bayes classifier): \\
 
 To get a better sense of the kinds of errors the algorithm made, we stored a small
-number of the errors made across the 10 folds. What follows are some examples: \\
+number of misclassified sentences across the 10 folds. What follows are some examples: \\
 
 \begin{itemize}
     \item{director hoffman , his writer and kline's agent should serve detention}
-    \item{allen se atreve a atacar , a atacarse y nos ofrece gags que van de la sonrisa a la risa de larga duraciÃ³n}
+    \item{allen se atreve a atacar , a atacarse y nos ofrece gags que van de la sonrisa a la risa de larga duracian}
     \item{i have two words to say about reign of fire . great dragons ! }
     \item{the cast is uniformly excellent . . . but the film itself is merely mildly charming .}
     \item{mildly entertaining .}
@@ -153,9 +172,9 @@ number of the errors made across the 10 folds. What follows are some examples: \
 We make a few observations. First, the model isn't picking up on what I'll call
 `veiled criticisms'. For example, saying that the filmmakers should
 \textit{serve detention} or that the film is \textit{mildly entertaining} is
-an indirect criticism in the first case, and actually a positively-valenced
+an indirect criticism in the first case, and actually a positively-valanced
 sentiment in the second case. A better algorithm would need a fuller understanding
-of language beyong bigrams to understand that `mildly entertaining' might actually
+of language beyond bigrams to understand that `mildly entertaining' might actually
 not be an endorsement in the context of a film review. Second, at least one review
 in the corpus is not in English. Any other foreign language reviews we would expect
 to be predicted at chance level (50\%). Third, some reviews use a lot of positive
@@ -163,11 +182,15 @@ words in isolation as a form of either irony or politeness (e.g.,
 \textit{mom and dad [can nap]}, \textit{great dragons}, \textit{mildly charming}).
 These sentiments imply a negative review to the reader (`are the dragons the
 only good part of this film?'), but a bigram model might read `great' or `great
-dragons' and reasonably score this as a positive review. \\
+dragons' and reasonably score this as a positive review. Fourth, it appears that
+some words were not separated properly during preprocessing (i.e., \textit{thekids}
+and \textit{naptime}). These would be treated as new words in the corpus, which isn't
+appropriate, as these errors aren't likely to occur often. \\
 
-I suggest: better data cleaning to remove foreign language reviews, and a more
-sophisticated model that understand language in context beyond what a bigram
-model can encode.
+I suggest: better data cleaning to remove foreign language reviews, a more sophisticated
+preprocessing pipeline that will catch joined words and other similar errors, and a more
+sophisticated model that understand language in context beyond what a bigram model can
+encode.
 
 \begin{table}[]
 \begin{tabular}{lll}
