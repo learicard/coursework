@@ -49,17 +49,25 @@ We want to know: \\
 P(D|T) = \frac{P(T|D) P(D)}{P(T)}
 \end{equation}
 
-Which means we need to calculate $P(T)$ which is $P(T|D) + P(T |\neg D) = 0.966$ \\
+Which means we need to calculate $P(T)$ which is \\
 
 \begin{equation}
-P(D|T) = \frac{0.87 \times 0.015}{0.966} \approx 0.0135
+   P(T) = P(T|D)P(D) + P(T |\neg D)P(\neg D) 
+        = 0.87 \times 0.015 + 0.096 \times (1-0.015) 
+        \approx 0.1076 
+\end{equation}
+
+\begin{equation}
+    P(D|T) = \frac{0.87 \times 0.015}{0.1076} \approx 0.1213
 \end{equation}
 
 \section{Curse of Dimensionality}
 
-(A) \textit{Consider a hypercube in dimension $d$ with side length $c$. What is the volume $V$?} \\
+(A) \textit{Consider a hypercube in dimension $d$ with side length $c$. 
+            What is the volume $V$?} \\
 
-In the 2-dimensional case, $area = c^2$. In the 3 dimensional case, $V = c^3$. In the n-dimensional case, $V = c^d$. \\
+In the 2-dimensional case, $area = c^2$. In the 3 dimensional case, $V = c^3$. 
+In the n-dimensional case, $V = c^d$. \\
 
 (B) \textit{$X$ is a random vector of dimension d ($x \in \R d$) distributed 
 uniformly within the hypercube (the probability density  $p(x) = 0$ for all $x$ 
@@ -74,7 +82,11 @@ For all probability distributions: \\
 \end{equation}
 
 We know $p(x) = 0$ for all points outside of the hypercube. Therefore,
-$p(x) = 1$ for $x$ inside the cube (since $1-0 = 1$). \\
+the probability of being in a particular point inside the hypercube is
+
+\begin{equation}
+    p(x) = \frac{1}{c^d}
+\end{equation}
 
 (C) \textit{Consider the outer shell (border) of the hypercube of width 
 3\% of c (covering the part of the hypercube extending from the faces of 
@@ -139,17 +151,19 @@ And the probability we are in the border is: \\
 \end{equation}
 
 \begin{equation}
-    94^{1000} / 100^{1000} \approx 1 (i.e., tres grand).
+    94^{1000} / 100^{1000} \approx 1
 \end{equation} \\
 
-(E) When the dimension grows, the probability that $x$ falls into the narrow border at the edge of the hypercube becomes more likely, which is contrary of our intuitions
-at lower dimensions. 
+(E) When the dimension grows, the probability that $x$ falls into the narrow 
+border at the edge of the hypercube becomes more likely, which is contrary of 
+our intuitions at lower dimensions. 
 
 \section{Parametric Gaussian vs Parzen Window Density Estimation}
 
 \subsection{Isotropic Gaussian Distribution} \\
 
-(A) The named parameters are $\mu$, a $d$-long vector of means, and $\Sigma$, a $d \times d$ covariance matrix, where $n$ is the number of data points. \\
+(A) The named parameters are $\mu$, a $d$-long vector of means, and $\Sigma$, a 
+$d \times d$ covariance matrix, where $n$ is the number of data points. \\
 
 (B) 
 
@@ -163,7 +177,9 @@ at lower dimensions.
 
 (C) For the $\mathcal{\mu}$ parameter, the algorithm complexity is in $\mathcal{O}(n)$, since it is summing over the vectors $\mathcal (x_{i})$.
 
-For the  $\Sigma$ parameter, since the Gaussian density function is isotropic, the algorithm complexity is also in $\mathcal{O}(n)$. $\mu$ can be calculated by $\Sigma = \sigma I^2$. \\
+For the  $\Sigma$ parameter, since the Gaussian density function is isotropic, the algorithm complexity is also in $\mathcal{O}(n)$. 
+
+%$\mu$ can be calculated by $\Sigma = \sigma I^2$. \\
 
 (D)
 
@@ -171,11 +187,16 @@ For the  $\Sigma$ parameter, since the Gaussian density function is isotropic, t
     p(x) = \frac{1}{(2\pi)^{frac{d}{2} \sqrt{|\Sigma|}}} {\rm e}^{-\frac{1}{2}(x-\mu)^T \Sigma^{-1} (x-\mu)}   
 \end{equation}
  
-(E) The cost of this operation is $\mathcal{O}(1)$, since this is a straight calculation. \\
+(E) The cost of this operation is limited by the find the determinant of \Sigma
+and theinversion of \Sigma. Both of these operations take $\mathcal{O}(d^{2.373})$  
+assuming we use the Coppersmith–Winograd algorithm for the inversion and fast
+matrix multiplication for finding the determinant. \\
 
 \subsection{Parzen windows with Isotropic Gaussian Kernels} \\
 
-(A) The only thing learned during training of Parzen Window Density Estimation using Gaussian kernels is $\sigma$, since the peak of each Gaussian is each data point. Therefore, if $\sigma$ is fixed by the user, nothing is learned during training (the Gaussians are simply centered on each training data point). \\
+(A) If $\sigma$ is fixed by the user, nothing is learned during training (the 
+Gaussians are simply centered on each training data point and then summed to 
+create a density). Basicially this algorithm learn to remember the data. \\
 
 (B) \\
 
@@ -189,16 +210,72 @@ Expanded becomes: \\
     p(x) = \frac{1}{n}\sum_{i=1}^{n} \frac{1}{(2\pi)^{\frac{d}{2}} \sigma^d} {\rm e}^{-\frac{1}{2}\frac{d(x_{test}, x_{train})^2}{\sigma^2} }
 \end{equation}\\
 
-(C) $\mathcal{O}(n)$, since we have to calculate the distance between $x_{test}$ and all of the $n$ data points $x_{train}$. \\
+(C) $\mathcal{O}(n)$, since we have to calculate the distance between 
+$x_{test}$ and all of the $n$ data points $x_{train}$. \\
 
 \subsection{Capacity/Expressivitiy} \\
 
-(A) The Parzen Gaussian is more expressive, because it can store information for every data point. The capacity of the algorithm grows as we give it more data points, this isn't true for the Gaussian distribution, which averages over all data points, so it has a fixed capacity for a given dimensionality, no matter how many training data the algorithm is shown. \\
+(A) The Parzen Gaussian is more expressive, because it can store information for
+ every data point. The capacity of the algorithm grows as we give it more data 
+ points, this isn't true for the Gaussian distribution, which averages over all 
+ data points, so it has a fixed capacity for a given dimensionality, no matter 
+ how many training data the algorithm is shown. \\
 
-(B) Parzen windows with Isotropic Gaussian Kernels, in the case that we used a large number of training examples with a small $\sigma$ would result in extreme memorization of the noise in the training data (i.e., overfitting). \\
+(B) Parzen windows with Isotropic Gaussian Kernels, in the case that we used a 
+large number of training examples with a small $\sigma$ would result in extreme 
+memorization of the noise in the training data (i.e., overfitting). \\
 
-(C) Because in parametric Gaussian density estimation, $\sigma$ is learned from the data, while it is fixed for all data points when using Parzen windows. \\ 
+(C) Because in parametric Gaussian density estimation, $\sigma$ is learned from 
+the data, while it is fixed for all data points when using Parzen windows. \\ 
+
+\subsection{Empirical Risk}
+
+(A) \textit{Express the equation of a diagonal Gaussian density in R^d . Specify 
+            what are its parameters and their dimensions.} \\
+
+p(x) = \frac{1}{(2\pi)^{frac{d}{2} \sqrt{|\Sigma|}}} {\rm e}^{-\frac{1}{2}(x-\mu)^T \Sigma^{-1} (x-\mu)} \\
+
+-- parameters are \Sigma (\d \time \d) and \mu (\d).
+
+(B) \textit{Show that the components of a random vector following a diagonal 
+            Gaussian distribution are independent random variables.} \\
+
+
+
+(C) \textit{Using − log p(x) as the loss, write down the equation corresponding 
+            to the empirical risk minimization on the training set D (in order 
+            to learn the parameters).} \\
+
+The log-likelyhood function is: \\
+
+\begin{equation}
+    log(P|\mu,\Sigma) = -\frac{N}{2}log|\Sigma| -\frac{1}{2} 
+        \sum_{n=1}^{N} [(X_n - \mu)^T \Sigma^{-1} (X_n - \mu)] + c
+\end{equation}
+
+Where $c$ is a constant.
+
+(D) \textit{Solve this equation analytically in order to obtain the optimal
+            parameters.} \\
+
+
+First we find \hat{\mu}: \\
+
+
+\begin{equation}
+    \frac{\partial log p(X | \mu, \Sigma)}{\partial\mu} = 
+        \sum_{i=1}^{N}(X_i-\mu)^T \Sigma^-1 = 0 
+\end{equation}
+
+
+\begin{equation}
+    0 = N \mu - \sum_{i=1}^{} 
+\end{equation}
+
+\begin{equat}
+
 
 \section{Softmax Activation Function}
 
 \end{document}
+
