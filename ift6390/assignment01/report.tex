@@ -63,13 +63,17 @@ Which means we need to calculate $P(T)$ which is \\
 
 \section{Curse of Dimensionality}
 
-(A) \textit{Consider a hypercube in dimension $d$ with side length $c$. 
+\subsection{1} 
+
+\textit{Consider a hypercube in dimension $d$ with side length $c$. 
             What is the volume $V$?} \\
 
 In the 2-dimensional case, $area = c^2$. In the 3 dimensional case, $V = c^3$. 
 In the n-dimensional case, $V = c^d$. \\
 
-(B) \textit{$X$ is a random vector of dimension d ($x \in \R d$) distributed 
+\subsection{2} 
+
+\textit{$X$ is a random vector of dimension d ($x \in \R d$) distributed 
 uniformly within the hypercube (the probability density  $p(x) = 0$ for all $x$ 
 outside the cube). What is the probability density function $p(x)$ for $x$ inside 
 the cube? Indicate which property(ies) of probability densities functions allow 
@@ -88,7 +92,9 @@ the probability of being in a particular point inside the hypercube is
     p(x) = \frac{1}{c^d}
 \end{equation}
 
-(C) \textit{Consider the outer shell (border) of the hypercube of width 
+\subsection{3} 
+
+\textit{Consider the outer shell (border) of the hypercube of width 
 3\% of c (covering the part of the hypercube extending from the faces of 
 the cube and 0.03c inwards). For example, if c = 100cm, the border will
 be 3cm (left, right, top, etc ...) and will delimit this way a second
@@ -116,15 +122,15 @@ Therefore for the above example: \\
     p(x_{small}) = (100 - 2 \times 3)^d / 100^d = 94^d / 100^d \\
 \end{equation}
 
-And as before: \\
+And as before, the probability we are in the border is: \\
 
 \begin{equation}
     p(x_{border}) = 1 - p(x_{small})
 \end{equation} \\
 
-And the probability we are in the border is: \\
+\subsection{4} 
 
-(D) \textit{Calculate the above for $d = {1, 2, 3, 5, 10, 100, 1000}$}.
+\textit{Calculate the above for $d = {1, 2, 3, 5, 10, 100, 1000}$}.
 
 \begin{equation}
     1- 94^1 / 100^1 = 0.06
@@ -154,7 +160,9 @@ And the probability we are in the border is: \\
     94^{1000} / 100^{1000} \approx 1
 \end{equation} \\
 
-(E) When the dimension grows, the probability that $x$ falls into the narrow 
+\subsection{5} 
+
+When the dimension grows, the probability that $x$ falls into the narrow 
 border at the edge of the hypercube becomes more likely, which is contrary of 
 our intuitions at lower dimensions. 
 
@@ -162,10 +170,12 @@ our intuitions at lower dimensions.
 
 \subsection{Isotropic Gaussian Distribution} \\
 
-(A) The named parameters are $\mu$, a $d$-long vector of means, and $\Sigma$, a 
+\subsubsection{A} 
+
+The named parameters are $\mu$, a $d$-long vector of means, and $\Sigma$, a 
 $d \times d$ covariance matrix, where $n$ is the number of data points. \\
 
-(B) 
+\subsubsection{B} 
 
 \begin{equation}
     \mu = \frac{1}{n}\sum_{i=1}^{n}x_{i}.
@@ -175,30 +185,37 @@ $d \times d$ covariance matrix, where $n$ is the number of data points. \\
     \Sigma = {1 \over {n}}\sum_{i=1}^n (\mathbf{x}_i-\mu) (\mathbf{x}_i-\mu)^\mathrm{T}
 \end{equation} \\
 
-(C) For the $\mathcal{\mu}$ parameter, the algorithm complexity is in $\mathcal{O}(n)$, since it is summing over the vectors $\mathcal (x_{i})$.
+\subsubsection{C} 
 
-For the  $\Sigma$ parameter, since the Gaussian density function is isotropic, the algorithm complexity is also in $\mathcal{O}(n)$. 
+For the $\mathcal{\mu}$ parameter, the algorithm complexity is in 
+$\mathcal{O}(n)$, since it is summing over the $n$ vectors $x_{i}$. For 
+the $\Sigma$ parameter, since the Gaussian density function is isotropic, the 
+algorithm complexity is also in $\mathcal{O}(n)$. 
 
 %$\mu$ can be calculated by $\Sigma = \sigma I^2$. \\
 
-(D)
+\subsubsection{D} 
 
 \begin{equation}
-    p(x) = \frac{1}{(2\pi)^{frac{d}{2} \sqrt{|\Sigma|}}} {\rm e}^{-\frac{1}{2}(x-\mu)^T \Sigma^{-1} (x-\mu)}   
+    p(x) = \frac{1}{(2\pi)^{\frac{d}{2} \sqrt{|\Sigma|}}} {\rm e}^{-\frac{1}{2}(x-\mu)^T \Sigma^{-1} (x-\mu)}   
 \end{equation}
  
-(E) The cost of this operation is limited by the find the determinant of \Sigma
-and theinversion of \Sigma. Both of these operations take $\mathcal{O}(d^{2.373})$  
+\subsubsection{E} 
+
+The cost of this operation is limited by the find the determinant of $\Sigma$
+and the inversion of $\Sigma$. Both of these operations take $\mathcal{O}(d^{2.373})$  
 assuming we use the Coppersmith–Winograd algorithm for the inversion and fast
 matrix multiplication for finding the determinant. \\
 
 \subsection{Parzen windows with Isotropic Gaussian Kernels} \\
 
-(A) If $\sigma$ is fixed by the user, nothing is learned during training (the 
-Gaussians are simply centered on each training data point and then summed to 
-create a density). Basicially this algorithm learn to remember the data. \\
+\subsubsection{A} 
 
-(B) \\
+ If $\sigma$ is fixed by the user, nothing is learned during training (the 
+Gaussians are simply centered on each training data point and then summed to 
+create a density). Basicially this algorithm learns to remember the data. \\
+
+\subsubsection{B} 
 
 \begin{equation}
     p(x) = \frac{1}{n}\sum_{i=1}^{n}\mathcal{N}_{x, \sigma}(x)
@@ -210,41 +227,120 @@ Expanded becomes: \\
     p(x) = \frac{1}{n}\sum_{i=1}^{n} \frac{1}{(2\pi)^{\frac{d}{2}} \sigma^d} {\rm e}^{-\frac{1}{2}\frac{d(x_{test}, x_{train})^2}{\sigma^2} }
 \end{equation}\\
 
-(C) $\mathcal{O}(n)$, since we have to calculate the distance between 
+\subsubsection{C} 
+
+$\mathcal{O}(n)$, since we have to calculate the distance between 
 $x_{test}$ and all of the $n$ data points $x_{train}$. \\
 
 \subsection{Capacity/Expressivitiy} \\
+\subsubsection{A} 
 
-(A) The Parzen Gaussian is more expressive, because it can store information for
- every data point. The capacity of the algorithm grows as we give it more data 
- points, this isn't true for the Gaussian distribution, which averages over all 
- data points, so it has a fixed capacity for a given dimensionality, no matter 
- how many training data the algorithm is shown. \\
+The Parzen Gaussian is more expressive, because it can store information for
+every data point. The capacity of the algorithm grows as we give it more data 
+points, this isn't true for the Gaussian distribution, which averages over all 
+data points, so it has a fixed capacity for a given dimensionality, no matter 
+how many training data the algorithm is shown. \\
 
-(B) Parzen windows with Isotropic Gaussian Kernels, in the case that we used a 
+\subsubsection{B} 
+
+Parzen windows with Isotropic Gaussian Kernels, in the case that we used a 
 large number of training examples with a small $\sigma$ would result in extreme 
 memorization of the noise in the training data (i.e., overfitting). \\
 
-(C) Because in parametric Gaussian density estimation, $\sigma$ is learned from 
+\subsubsection{C} 
+
+Because in parametric Gaussian density estimation, $\sigma$ is learned from 
 the data, while it is fixed for all data points when using Parzen windows. \\ 
 
 \subsection{Empirical Risk}
 
-(A) \textit{Express the equation of a diagonal Gaussian density in R^d . Specify 
+\subsubsection{A} 
+
+\textit{Express the equation of a diagonal Gaussian density in $R^d$ . Specify 
             what are its parameters and their dimensions.} \\
 
-p(x) = \frac{1}{(2\pi)^{frac{d}{2} \sqrt{|\Sigma|}}} {\rm e}^{-\frac{1}{2}(x-\mu)^T \Sigma^{-1} (x-\mu)} \\
+\begin{equation}
+    p(x) = \frac{1}{(2\pi)^{frac{d}{2} \sqrt{|\Sigma|}}} {\rm e}^{-\frac{1}{2}(x-\mu)^T \Sigma^{-1} (x-\mu)}, \\
+\end{equation}
 
--- parameters are \Sigma (\d \time \d) and \mu (\d).
+where the parameters are $\Sigma$ (dimension $d \times d$) and $\mu$ (dimension $d$). \\
 
-(B) \textit{Show that the components of a random vector following a diagonal 
-            Gaussian distribution are independent random variables.} \\
+\subsubsection{B}
 
+\textit{Show that the components of a random vector following a diagonal 
+        Gaussian distribution are independent random variables.} \\
 
+Let 
 
-(C) \textit{Using − log p(x) as the loss, write down the equation corresponding 
-            to the empirical risk minimization on the training set D (in order 
-            to learn the parameters).} \\
+\begin{equation}
+    \begin{align}
+    X & = (X_1, X_2, ..., X_d)^T \\
+    \mu & = (\mu_1, \mu_2, ..., \mu_d)^T \\ 
+    \Sigma & = (\sigma_{ij})_{i=1,2,...,d; j=1,2,...,d}
+    \end{align}
+\end{equation}
+
+Since the components of the random vector follow a diagonal Gaussian distribution,
+$\Sigma$ has the form: \\
+
+\begin{equation}
+    \Sigma = \begin{bmatrix}
+        \sigma_{11} &           0 &      0 & \dots  & 0 \\
+                  0 & \sigma_{22} &      0 & \dots  & 0 \\
+             \vdots &      \vdots & \vdots & \ddots & \vdots \\
+                  0 &           0 &      0 & \dots  & \sigma_{dd}
+    \end{bmatrix}, where (\sigma_{ij}=0)_{i \neq j}
+\end{equation}
+
+and
+
+\begin{equation}
+    \Sigma^{-1} = \begin{bmatrix}
+        \sigma_{11}^{-1} &           0 &      0 & \dots  & 0 \\
+                  0 & \sigma_{22}^{-1} &      0 & \dots  & 0 \\
+             \vdots &      \vdots & \vdots & \ddots & \vdots \\
+                  0 &           0 &      0 & \dots  & \sigma_{dd}^{-1}
+    \end{bmatrix}, where (\sigma_{ij}=0)_{i \neq j}.
+\end{equation}\\
+
+Hence, we can change the exponent in the equation for a multidimensional gaussian:
+
+\begin{equation}
+    p(x) = \frac{1}{(2\pi)^{\frac{d}{2} \sqrt{|\Sigma|}}} {\rm e}^{-\frac{1}{2}(x-\mu)^T \Sigma^{-1} (x-\mu)}   
+\end{equation}
+
+with 
+
+\begin{equation}
+    \begin{align}
+    (X-\mu)^T \Sigma^{-1} (X-\mu) & = \big[(X_1-\mu_1)\sigma_{11}^{-1} + (X_2-\mu_2)\sigma_{22}^{-1} + ... + (X_d-\mu_d)\sigma_{dd}^{-1}\big] \begin{bmatrix}
+           (X_1-\mu_1) \\
+           (X_2-\mu_2) \\
+           \vdots \\
+           (x_d-\mu_d)
+        \end{bmatrix} \\
+    & = (X_1-\mu_1)^2 \sigma_{11}^{-1} + (X_2-\mu_2)^2 \sigma_{22}^{-1} + ... + (X_d-\mu_d)^2 \sigma_{dd}^{-1} \\
+    & = \sum_{i=1}^{d}(X_i-\mu_i)^2 \sigma_{ii}^{-1}
+    \end{align}
+\end{equation}
+
+Since we know that the determinant of a diagonal matrix is equal to the product 
+of all diagonal elements, 
+
+\begin{equation}
+    \begin{align}
+    p(x) & = \frac{1}{(2\pi)^{\frac{d}{2}} \sqrt{\prod_{i=1}^{d}\sigma_{ii}}} {\rm e}^{-\frac{1}{2}(X_i-\mu_i)^2 \sigma_{ii}^{-1}} \\
+         & = \prod_{i=1}^{d} \big(\frac{1}{\sqrt{2\pi \sigma_{ii}}} \big) {\rm e}^{-\frac{1}{2}(X_i-\mu_i)^2 \sigma_{ii}^{-1}}
+    \end{align}
+\end{equation}
+
+which is the product of the marginal density of each variable (dimension $d$).
+
+\subsubsection{C}
+
+\textit{Using − log p(x) as the loss, write down the equation corresponding 
+        to the empirical risk minimization on the training set D (in order to 
+        learn the parameters).} \\
 
 The log-likelyhood function is: \\
 
@@ -253,14 +349,14 @@ The log-likelyhood function is: \\
         \sum_{n=1}^{N} [(X_n - \mu)^T \Sigma^{-1} (X_n - \mu)] + c
 \end{equation}
 
-Where $c$ is a constant.
+Where $c$ is a constant. \\
 
-(D) \textit{Solve this equation analytically in order to obtain the optimal
+\subsubsection{D}
+
+\textit{Solve this equation analytically in order to obtain the optimal
             parameters.} \\
 
-
 First we find \hat{\mu}: \\
-
 
 \begin{equation}
     \frac{\partial log p(X | \mu, \Sigma)}{\partial\mu} = 
@@ -269,13 +365,52 @@ First we find \hat{\mu}: \\
 
 
 \begin{equation}
-    0 = N \mu - \sum_{i=1}^{} 
+    \begin{align}
+    0 &= N \mu - \sum_{i=1}^{N}X_i \\
+    \hat\mu & = \frac{1/N}\sum_{i=i}^{N}X_i
+    \end{align}
 \end{equation}
 
-\begin{equat}
+Where $\hat\mu$ is of dimension: ${\rm I\!R}^d$. \\
 
+Next we find \hat{\Sigma}: \\
 
-\section{Softmax Activation Function}
+\begin{equation}
+    \begin{align}
+    \frac{\partial \log p(X | \mu, \Sigma)}{\partial\mu} & = \sum_{i=1}^{N}(X_i-\mu)^T \Sigma^-1 \\
+    & \propto -\frac{N}{2} \log|\Sigma| -\frac{1}{2} \sum_{n=1}^{N} tr(\Sigma^{-1}(X_n-\mu)(N_n-\mu)^T) \\
+    & = -\frac{N}{2} \log|\Sigma| -\frac{1}{2}tr(\Sigma^{-1} \sum_{n=1}^{N} [(X_n-\mu)(N_n-\mu)^T])
+    \end{align}
+\end{equation}
+
+Here we used the `trace trick' to re-arrange the multiplied elements on the right
+side of the equation (if you have matrix multiplications that result in a scalar),
+one can use trace to rearrange the arguments), i.e., $UVU' = tr(VUU')$. \\
+
+Also note that:\\
+
+\begin{equation}
+    \begin{align}
+    \frac{\partial}{\partial A} tr[AB] & = B^T \\
+    \frac{\partial}{\partial A} log|A| & = A^{-T}
+    \end{align}
+\end{equation}
+
+Which allows to remove $[(X_n-\mu)(N_n-\mu)^T]$ when differentiating with 
+respect to \Sigma^{-1}: \\
+
+\begin{equation}
+    \begin{align}
+    \frac{\partial l(\mu, \Sigma|X_i)}{\partial\Sigma^{-1}} & = 
+        \frac{\partial}{\partial\Sigma^{-1}}\big(\frac{N}{2}log|\Sigma^{-1}\big) + 
+        \frac{\partial}{\partial\Sigma^{-1}}\big(-\frac{1}{2}tr(\Sigma^{-1}\sum_{n=1}^{N}[(X_n-\mu)(X_n-\mu)^T])\big) = 0 \\
+    & \Leftrightarrow \frac{N}{2} \Sigma -\frac{1}{2}\sum_{i=1}^{N}(X_i-\mu)(X_i-\mu)^T \\
+    & \Leftrightarrow N\Sigma - \sum_{i=1}^{N}(X_i-\mu)(X_i-\mu)^T \\
+    & \Leftrightarrow \hat\Sigma - \frac{1}{N}\sum_{i=1}^{N}(X_i-\mu)(X_i-\mu)^T
+    \end{align}
+\end{equation}
+
+Where $\hat\Sigma$ is of dimension: ${\rm I\!R}^{d \times d}$. 
 
 \end{document}
 
