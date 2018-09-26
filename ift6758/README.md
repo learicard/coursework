@@ -1,28 +1,28 @@
 Lesson Plan
 
-- [X] Introduction, overview, domain framework
-- [ ] The data
+- [X] 0 Introduction, overview, domain framework
+- [ ] 1 The data
     - [ ] Structured, semi-structured and unstructured
     - [ ] Cleaning
     - [ ] Data base
     - [ ] Dataset
-- [ ] Methodology
+- [ ] 2 Methodology
     - [ ] Scientific method
     - [ ] Model, parameters and hyper parameter, on learning
     - [ ] Statistical review, correlation, hypothesis test, Pvalues
     - [ ] Resampling
-- [ ] Visualization
+- [ ] 3 Visualization
     - [ ] Data partitioning
     - [ ] Dimensionality reduction
-- [ ] Discovering bosses
+- [ ] 4 Discovering bosses
     - [ ] Pattern search
     - [ ] Big data, MapReduce
-- [ ] Prediction (Automatic Learning)
+- [ ] 5 Prediction (Automatic Learning)
     - [ ] Classification
     - [ ] Regression
     - [ ] Together
     - [ ] Introduction to deep learning and AI (informal)
-- [ ] Ethics
+- [ ] 6 Ethics
     - [ ] Ethics
     - [ ] Legal aspect
     - [ ] Private life
